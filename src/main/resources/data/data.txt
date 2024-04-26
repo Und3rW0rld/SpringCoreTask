@@ -1,0 +1,11 @@
+Trainee_Data
+1:Juanky,Herrera,juanky.herrera,1234567890,true,2004-07-22,Pancha Street #75-33
+2:Alberto,Franco,alberto.franco,0123456789,true,1992-01-12,Sunshine Avenue #75-33
+3:Juan,Brown,juan.brown,1478523690,false,2002-08-04,Pancha Street #76-33
+Trainer_Data
+1:Pedro,Pascal,pedro.pascal,0147852369,true,Sports coach
+2:Emerson,Otalvaro,emerson.otalvaro,7412589630,true,Grupal Coach
+Training_Data
+1:1,1,Strength Training,Strength,2024-04-30,60 minutes
+2:2,2,Yoga class,Yoga,2024-04-30,30 minutes
+3:3,2,Yoga class,Yoga,2024-04-30,30 minutes
