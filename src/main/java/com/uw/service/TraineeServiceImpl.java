@@ -5,8 +5,6 @@ import com.uw.model.Trainee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.logging.Logger;
-
 @Service
 public class TraineeServiceImpl implements TraineeService{
 
@@ -18,8 +16,9 @@ public class TraineeServiceImpl implements TraineeService{
     }
 
     @Override
-    public void createTrainee(Trainee trainee) {
+    public long createTrainee(Trainee trainee) {
         this.traineeDao.create(trainee);
+        return trainee.getUserId();
     }
 
     @Override

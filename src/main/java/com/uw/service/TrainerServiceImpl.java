@@ -16,8 +16,9 @@ public class TrainerServiceImpl implements TrainerService{
     }
 
     @Override
-    public void createTrainer(Trainer trainer) {
+    public long createTrainer(Trainer trainer) {
         trainerDao.create(trainer);
+        return trainer.getUserId();
     }
 
     @Override

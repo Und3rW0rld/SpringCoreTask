@@ -16,8 +16,9 @@ public class TrainingServiceImpl implements TrainingService{
     }
 
     @Override
-    public void createTraining(Training training) {
+    public long createTraining(Training training) {
         trainingDao.create(training);
+        return training.getId();
     }
 
     @Override

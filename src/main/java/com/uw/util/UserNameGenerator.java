@@ -29,18 +29,22 @@ public class UserNameGenerator {
         String username = firstName + "." + lastName;
         int cont = 0;
         StorageImpl s = (StorageImpl) ((TraineeDaoImpl) traineeDao).getStorage();
+        if(!s.getMyStorage().isEmpty()){
         for( Object value: s.getMyStorage().values().toArray() ){
             Trainee trainee = (Trainee) value;
-            if( trainee.getUsername().equals(username)){
+            if( trainee.getUsername().equalsIgnoreCase(username)){
                 cont++;
             }
         }
+        }
         s = (StorageImpl) ((TrainerDaoImpl) trainerDao).getStorage();
+        if(!s.getMyStorage().isEmpty()){
         for( Object value: s.getMyStorage().values().toArray() ){
             Trainer trainer = (Trainer) value;
-            if( trainer.getUsername().equals(username)){
+            if( trainer.getUsername().equalsIgnoreCase(username)){
                 cont++;
             }
+        }
         }
         if ( cont == 0 ){
             return username;
