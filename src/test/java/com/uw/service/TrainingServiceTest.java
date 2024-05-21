@@ -1,11 +1,9 @@
-package com.uw;
+package com.uw.service;
 
 import com.uw.dao.TrainingDao;
 import com.uw.dao.TrainingDaoImpl;
 import com.uw.model.Training;
 import com.uw.model.TrainingType;
-import com.uw.service.TrainingService;
-import com.uw.service.TrainingServiceImpl;
 import com.uw.util.Storage;
 import com.uw.util.StorageImpl;
 import org.junit.Before;

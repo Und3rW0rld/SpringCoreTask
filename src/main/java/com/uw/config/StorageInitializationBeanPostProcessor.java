@@ -56,7 +56,7 @@ public class StorageInitializationBeanPostProcessor implements BeanPostProcessor
                 return;
             }
         } catch (IOException e) {
-            logger.severe("Something went wrong: " + e.getMessage());
+            logger.severe(String.format("Something went wrong: %s", e.getMessage()));
         }
 
         Resource resource = resourceLoader.getResource(propertyValue);
@@ -73,7 +73,7 @@ public class StorageInitializationBeanPostProcessor implements BeanPostProcessor
                         ( (TraineeService) storage ).createTrainee(trainee);
                         registers++;
                     }
-                    logger.info("Added: "+registers+" trainees from datasource");
+                    logger.info(String.format("Added: %s trainees from datasource", registers));
                 } else if (line.equals("Trainer_Data") && storage instanceof TrainerService) {
                 while(!(line = reader.readLine()).equals("Training_Data")){
                     String [] parts = line.split(":");
@@ -83,7 +83,7 @@ public class StorageInitializationBeanPostProcessor implements BeanPostProcessor
                     ((TrainerService) storage).createTrainer(trainer);
                     registers++;
                 }
-                logger.info("Added: "+registers+" trainers from datasource");
+                logger.info(String.format("Added: %s trainees from datasource", registers));
             } else if (line.equals("Training_Data") && storage instanceof TrainingService) {
                 while((line = reader.readLine()) != null){
                     String [] parts = line.split(":");
@@ -93,7 +93,7 @@ public class StorageInitializationBeanPostProcessor implements BeanPostProcessor
                     ((TrainingService) storage).createTraining(training);
                     registers++;
                 }
-                logger.info("Added: "+registers+" trainings from datasource");
+                logger.info(String.format("Added: %s trainees from datasource", registers));
             }
             }
         } catch (IOException e) {
