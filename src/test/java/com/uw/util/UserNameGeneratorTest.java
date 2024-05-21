@@ -1,4 +1,4 @@
-package com.uw;
+package com.uw.util;
 
 import com.uw.dao.TraineeDao;
 import com.uw.dao.TraineeDaoImpl;
@@ -6,8 +6,6 @@ import com.uw.dao.TrainerDao;
 import com.uw.dao.TrainerDaoImpl;
 import com.uw.model.Trainee;
 import com.uw.model.Trainer;
-import com.uw.util.StorageImpl;
-import com.uw.util.UserNameGenerator;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -3,8 +3,7 @@ package com.uw.service;
 import com.uw.model.Trainer;
 
 public interface TrainerService {
-    public long createTrainer(Trainer trainer);
-    public void updateTrainer(Trainer trainer);
-    public Trainer selectTrainerProfile( long id ) throws Exception;
-
+    long createTrainer(Trainer trainer);
+    void updateTrainer(Trainer trainer);
+    Trainer selectTrainerProfile( long id ) throws Exception;
 }

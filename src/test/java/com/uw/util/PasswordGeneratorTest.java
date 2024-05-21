@@ -1,7 +1,5 @@
-package com.uw;
+package com.uw.util;
 
-import com.uw.util.PasswordGenerator;
-import com.uw.util.PasswordGeneratorImpl;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -15,7 +13,7 @@ public class PasswordGeneratorTest {
         PasswordGenerator passwordGenerator = new PasswordGeneratorImpl();
 
         // Act
-        String generatedPassword = passwordGenerator.generatePasword(digits);
+        String generatedPassword = passwordGenerator.generatePassword(digits);
 
         // Assert
         assertEquals("", generatedPassword);
@@ -28,7 +26,7 @@ public class PasswordGeneratorTest {
         PasswordGenerator passwordGenerator = new PasswordGeneratorImpl();
 
         // Act
-        String generatedPassword = passwordGenerator.generatePasword(digits);
+        String generatedPassword = passwordGenerator.generatePassword(digits);
 
         // Assert
         assertEquals(8, generatedPassword.length());
@@ -41,7 +39,7 @@ public class PasswordGeneratorTest {
         PasswordGenerator passwordGenerator = new PasswordGeneratorImpl();
 
         // Act
-        String generatedPassword = passwordGenerator.generatePasword(digits);
+        String generatedPassword = passwordGenerator.generatePassword(digits);
 
         // Assert
         assertEquals("", generatedPassword);
@@ -54,7 +52,7 @@ public class PasswordGeneratorTest {
         PasswordGenerator passwordGenerator = new PasswordGeneratorImpl();
 
         // Act
-        String generatedPassword = passwordGenerator.generatePasword(digits);
+        String generatedPassword = passwordGenerator.generatePassword(digits);
 
         // Assert
         assertEquals(true, generatedPassword.matches("[a-zA-Z0-9]+"));

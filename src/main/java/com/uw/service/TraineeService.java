@@ -3,8 +3,8 @@ package com.uw.service;
 import com.uw.model.Trainee;
 
 public interface TraineeService {
-    public long createTrainee(Trainee trainee );
-    public void updateTrainee(Trainee trainee);
-    public void deleteTrainee( long id ) throws Exception;
-    public Trainee selectTraineeProfile( long id ) throws Exception;
+    long createTrainee(Trainee trainee );
+    void updateTrainee(Trainee trainee);
+    void deleteTrainee( long id ) throws Exception;
+    Trainee selectTraineeProfile( long id ) throws Exception;
 }
