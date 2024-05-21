@@ -18,8 +18,6 @@ public class User {
         this.isActive = isActive;
     }
 
-
-
     public String getFirstName() {
         return firstName;
     }

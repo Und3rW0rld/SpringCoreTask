@@ -2,7 +2,6 @@ package com.uw.dao;
 
 import com.uw.model.Trainee;
 import com.uw.util.Storage;
-import com.uw.util.StorageImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

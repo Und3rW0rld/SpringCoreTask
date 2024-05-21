@@ -1,6 +1,5 @@
 package com.uw.facade;
 
-
 import com.uw.service.TraineeService;
 import com.uw.service.TrainerService;
 import com.uw.service.TrainingService;

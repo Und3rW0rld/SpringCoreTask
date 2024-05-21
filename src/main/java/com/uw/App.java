@@ -12,7 +12,6 @@ import com.uw.util.PasswordGeneratorImpl;
 import com.uw.util.UserNameGenerator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -146,7 +145,7 @@ public class App {
                 System.out.print("Type your lastname: ");
                 String lastname = sc.nextLine();
                 String username = applicationContext.getBean(UserNameGenerator.class).generateUsername(name, lastname);
-                String password = new PasswordGeneratorImpl().generatePasword(10);
+                String password = new PasswordGeneratorImpl().generatePassword(10);
                 System.out.print("Enter your Specialization: ");
                 String specialization = sc.nextLine();
                 Trainer trainer = new Trainer(name, lastname, username,password,true, specialization);
@@ -249,7 +248,7 @@ public class App {
                 System.out.print("Type your lastname: ");
                 String lastname = sc.nextLine();
                 String username = applicationContext.getBean(UserNameGenerator.class).generateUsername(name, lastname);
-                String password = new PasswordGeneratorImpl().generatePasword(10);
+                String password = new PasswordGeneratorImpl().generatePassword(10);
                 System.out.print("Type your year of birth: ");
                 String year = sc.nextLine();
                 System.out.print("Type your month of birth: ");

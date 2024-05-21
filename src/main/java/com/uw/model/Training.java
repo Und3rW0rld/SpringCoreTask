@@ -3,6 +3,7 @@ package com.uw.model;
 import java.time.LocalDate;
 
 public class Training {
+
     private long traineeId;
     private long trainerId;
     private String trainingName;
@@ -10,8 +11,6 @@ public class Training {
     private LocalDate trainingDate;
     private String trainingDuration;
     private long id;
-
-
 
     public Training(long traineeId, long trainerId, String trainingName, TrainingType trainingType, LocalDate trainingDate, String trainingDuration) {
         this.traineeId = traineeId;

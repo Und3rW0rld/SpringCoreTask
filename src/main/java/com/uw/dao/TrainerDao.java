@@ -3,7 +3,7 @@ package com.uw.dao;
 import com.uw.model.Trainer;
 
 public interface TrainerDao {
-    public void create( Trainer trainer );
-    public void update( Trainer trainer );
-    public Trainer selectProfile(long id);
+    void create( Trainer trainer );
+    void update( Trainer trainer );
+    Trainer selectProfile(long id);
 }

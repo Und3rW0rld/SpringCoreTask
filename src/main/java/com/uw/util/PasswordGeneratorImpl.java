@@ -7,7 +7,7 @@ public class PasswordGeneratorImpl implements PasswordGenerator {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     @Override
-    public String generatePasword(int digits) {
+    public String generatePassword(int digits) {
         SecureRandom random = new SecureRandom();
         StringBuilder password = new StringBuilder();
         for (int i = 0; i < digits; i++) {
