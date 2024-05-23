@@ -1,4 +1,4 @@
-# GymCRMSystem Google 😼
+# GymCRMSystem 😼
 
 This project is a Spring-based module that handles a gym Customer Relationship Management (CRM) system.
 
