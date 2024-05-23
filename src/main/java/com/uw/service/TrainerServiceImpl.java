@@ -2,8 +2,13 @@ package com.uw.service;
 
 import com.uw.dao.TrainerDao;
 import com.uw.model.Trainer;
+import com.uw.model.Training;
+import com.uw.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class TrainerServiceImpl implements TrainerService{
@@ -18,7 +23,7 @@ public class TrainerServiceImpl implements TrainerService{
     @Override
     public long createTrainer(Trainer trainer) {
         trainerDao.create(trainer);
-        return trainer.getUserId();
+        return trainer.getId();
     }
 
     @Override
@@ -33,4 +38,20 @@ public class TrainerServiceImpl implements TrainerService{
         }
         return trainerDao.selectProfile(id);
     }
+
+    @Override
+    public List<Trainer> findAll() {
+        return trainerDao.findAll();
+    }
+
+    @Override
+    public Trainer getTrainerByUser(User user) {
+        return trainerDao.findTrainerByUser(user);
+    }
+
+    @Override
+    public Trainer findTrainerByUsername(String username) {
+        return trainerDao.findTrainerByUsername(username);
+    }
+
 }

@@ -1,31 +1,42 @@
 package com.uw.service;
 
-import com.uw.dao.TrainerDao;
+
 import com.uw.dao.TrainerDaoImpl;
 import com.uw.model.Trainer;
-import com.uw.util.Storage;
-import com.uw.util.StorageImpl;
+import com.uw.model.TrainingType;
+import com.uw.model.User;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
 public class TrainerServiceTest {
 
-    private final Storage storage = new StorageImpl();
+    SessionFactory sessionFactory;
     private final TrainerService trainerService = new TrainerServiceImpl();
-    private final TrainerDao trainerDao = new TrainerDaoImpl();
+
+    @After
+    public void tearDown() {
+        if (sessionFactory != null) {
+            sessionFactory.close();
+        }
+    }
 
     @Before
     public void setUp() {
-        ((StorageImpl) storage).setMyStorage(new HashMap<>());
-        ((TrainerDaoImpl) trainerDao).setStorage(storage);
+        sessionFactory = new MetadataSources(new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build())
+                .buildMetadata()
+                .buildSessionFactory();
+        TrainerDaoImpl trainerDao = new TrainerDaoImpl();
+        trainerDao.setSessionFactory(sessionFactory);
         ((TrainerServiceImpl) trainerService).setTrainerDao(trainerDao);
     }
 
-    @Test
+   @Test
     public void testCreateTrainer() throws Exception {
         // Inicializar datos del entrenador
         String name = "John";
@@ -34,8 +45,13 @@ public class TrainerServiceTest {
         String password = "password";
         String specialization = "Java";
 
+        User user = new User(name, lastName, username, password, true);
         // Crear un objeto de entrenador
-        Trainer trainer = new Trainer(name, lastName, username, password, true, specialization);
+        Trainer trainer = new Trainer();
+        trainer.setUser(user);
+        TrainingType trainingType = new TrainingType();
+        trainingType.setTypeName(specialization);
+        trainer.setSpecialization(trainingType);
 
         // Crear el entrenador en el servicio y obtener el ID
         long id = trainerService.createTrainer(trainer);
@@ -47,7 +63,7 @@ public class TrainerServiceTest {
         assertNotNull(trainer);
 
         // Verificar que el entrenador se pueda recuperar del servicio y sea igual al creado
-        assertEquals(trainer, trainerService.selectTrainerProfile(id));
+        assertEquals(trainer.toString(), trainerService.selectTrainerProfile(id).toString());
     }
 
     @Test
@@ -59,7 +75,13 @@ public class TrainerServiceTest {
         String password = "initialPassword";
         String specialization = "InitialSpecialization";
 
-        Trainer initialTrainer = new Trainer(name, lastName, username, password, true, specialization);
+        User user = new User(name, lastName, username, password, true);
+        Trainer initialTrainer = new Trainer();
+
+        initialTrainer.setUser(user);
+        TrainingType trainingType = new TrainingType();
+        trainingType.setTypeName(specialization);
+        initialTrainer.setSpecialization(trainingType);
 
         // Crear el entrenador en el servicio y obtener el ID
         long id = trainerService.createTrainer(initialTrainer);
@@ -67,11 +89,9 @@ public class TrainerServiceTest {
         // Modificar algunos atributos del entrenador
         String updatedName = "UpdatedName";
         String updatedLastName = "UpdatedLastName";
-        String updatedSpecialization = "UpdatedSpecialization";
 
-        initialTrainer.setFirstName(updatedName);
-        initialTrainer.setLastName(updatedLastName);
-        initialTrainer.setSpecialization(updatedSpecialization);
+        initialTrainer.getUser().setFirstName(updatedName);
+        initialTrainer.getUser().setLastName(updatedLastName);
 
         // Llamar al método updateTrainer
         trainerService.updateTrainer(initialTrainer);
@@ -80,9 +100,8 @@ public class TrainerServiceTest {
         Trainer updatedTrainer = trainerService.selectTrainerProfile(id);
 
         assertNotNull(updatedTrainer);
-        assertEquals(updatedName, updatedTrainer.getFirstName());
-        assertEquals(updatedLastName, updatedTrainer.getLastName());
-        assertEquals(updatedSpecialization, updatedTrainer.getSpecialization());
+        assertEquals(updatedName, updatedTrainer.getUser().getFirstName());
+        assertEquals(updatedLastName, updatedTrainer.getUser().getLastName());
     }
 
     @Test
@@ -93,8 +112,13 @@ public class TrainerServiceTest {
         String username = name + "." + lastName;
         String password = "testPassword";
         String specialization = "TestSpecialization";
+        User user = new User(name, lastName, username, password, true);
+        Trainer trainer = new Trainer();
 
-        Trainer trainer = new Trainer(name, lastName, username, password, true, specialization);
+        trainer.setUser(user);
+        TrainingType trainingType = new TrainingType();
+        trainingType.setTypeName(specialization);
+        trainer.setSpecialization(trainingType);
 
         // Crear el entrenador en el servicio y obtener el ID
         long id = trainerService.createTrainer(trainer);
@@ -103,7 +127,7 @@ public class TrainerServiceTest {
         Trainer selectedTrainer = trainerService.selectTrainerProfile(id);
 
         // Verificar que el entrenador seleccionado sea igual al entrenador creado
-        assertEquals(trainer, selectedTrainer);
+        assertEquals(trainer.toString(), selectedTrainer.toString());
     }
 
     @Test(expected = Exception.class)

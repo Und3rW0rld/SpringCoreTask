@@ -2,8 +2,12 @@ package com.uw.service;
 
 import com.uw.dao.TrainingDao;
 import com.uw.model.Training;
+import com.uw.model.TrainingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class TrainingServiceImpl implements TrainingService{
@@ -23,9 +27,25 @@ public class TrainingServiceImpl implements TrainingService{
 
     @Override
     public Training selectTrainingProfile(long id) throws Exception {
-        if(this.trainingDao.selectProfile(id) == null){
+        Training training = this.trainingDao.selectProfile(id);
+        if(training == null){
             throw new Exception("The id specified is not in the list of profiles");
         }
-        return trainingDao.selectProfile( id );
+        return training;
+    }
+
+    @Override
+    public List<Training> findAll() {
+        return trainingDao.findAll();
+    }
+
+    @Override
+    public List<Training> getTrainerTrainings(String username, LocalDate startDate, LocalDate endDate, String traineeName) {
+        return trainingDao.getTrainerTrainings(username, startDate, endDate, traineeName);
+    }
+
+    @Override
+    public List<Training> getTraineeTrainings(String username, LocalDate startDate, LocalDate endDate, String trainerName, TrainingType trainingType) {
+        return trainingDao.getTraineeTrainings(username, startDate, endDate, trainerName, trainingType);
     }
 }

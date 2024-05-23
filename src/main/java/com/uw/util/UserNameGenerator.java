@@ -1,47 +1,41 @@
 package com.uw.util;
 
-import com.uw.dao.TraineeDao;
-import com.uw.dao.TraineeDaoImpl;
-import com.uw.dao.TrainerDao;
-import com.uw.dao.TrainerDaoImpl;
 import com.uw.model.Trainee;
 import com.uw.model.Trainer;
+import com.uw.service.TraineeService;
+import com.uw.service.TrainerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserNameGenerator {
 
-    private TraineeDao traineeDao;
-    private TrainerDao trainerDao;
+    private TraineeService traineeServiceImpl;
+    private TrainerService trainerServiceImpl;
 
     @Autowired
-    public void setTraineeDao(TraineeDao traineeDao) {
-        this.traineeDao = traineeDao;
+    public void setTraineeService(TraineeService traineeServiceImpl) {
+        this.traineeServiceImpl = traineeServiceImpl;
     }
 
     @Autowired
-    public void setTrainerDao(TrainerDao trainerDao) {
-        this.trainerDao = trainerDao;
+    public void setTrainerService(TrainerService trainerServiceImpl) {
+        this.trainerServiceImpl = trainerServiceImpl;
     }
 
     public String generateUsername( String firstName, String lastName ) {
         String username = firstName + "." + lastName;
         int cont = 0;
-        StorageImpl s = (StorageImpl) ((TraineeDaoImpl) traineeDao).getStorage();
-        if(!s.getMyStorage().isEmpty()){
-        for( Object value: s.getMyStorage().values().toArray() ){
-            Trainee trainee = (Trainee) value;
-            if( trainee.getUsername().equalsIgnoreCase(username)){
+        if(!traineeServiceImpl.findAll().isEmpty()){
+        for( Trainee value: traineeServiceImpl.findAll()){
+            if( value.getUser().getUsername().equalsIgnoreCase(username)){
                 cont++;
             }
         }
         }
-        s = (StorageImpl) ((TrainerDaoImpl) trainerDao).getStorage();
-        if(!s.getMyStorage().isEmpty()){
-        for( Object value: s.getMyStorage().values().toArray() ){
-            Trainer trainer = (Trainer) value;
-            if( trainer.getUsername().equalsIgnoreCase(username)){
+        if(!trainerServiceImpl.findAll().isEmpty()){
+        for( Trainer value: trainerServiceImpl.findAll()){
+            if( value.getUser().getUsername().equalsIgnoreCase(username)){
                 cont++;
             }
         }

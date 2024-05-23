@@ -1,11 +1,18 @@
 package com.uw.util;
 
-import com.uw.dao.TraineeDao;
 import com.uw.dao.TraineeDaoImpl;
-import com.uw.dao.TrainerDao;
 import com.uw.dao.TrainerDaoImpl;
 import com.uw.model.Trainee;
 import com.uw.model.Trainer;
+import com.uw.model.User;
+import com.uw.service.TraineeService;
+import com.uw.service.TraineeServiceImpl;
+import com.uw.service.TrainerService;
+import com.uw.service.TrainerServiceImpl;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,17 +23,33 @@ import static org.junit.Assert.assertEquals;
 
 public class UserNameGeneratorTest {
 
-    private UserNameGenerator userNameGenerator;
-    private TraineeDao traineeDao;
-    private TrainerDao trainerDao;
+   private UserNameGenerator userNameGenerator;
+    private TrainerService trainerService = new TrainerServiceImpl();
+    SessionFactory sessionFactory;
+    private final TraineeService traineeService = new TraineeServiceImpl();
+
+    @After
+    public void tearDown() {
+        if (sessionFactory != null) {
+            sessionFactory.close();
+        }
+    }
 
     @Before
     public void setUp() {
+        sessionFactory = new MetadataSources(new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build())
+                .buildMetadata()
+                .buildSessionFactory();
+        TraineeDaoImpl traineeDao = new TraineeDaoImpl();
+        TrainerDaoImpl trainerDao = new TrainerDaoImpl();
+        traineeDao.setSessionFactory(sessionFactory);
+        trainerDao.setSessionFactory(sessionFactory);
+        ((TraineeServiceImpl) traineeService).setTraineeDao(traineeDao);
+        ((TrainerServiceImpl) trainerService).setTrainerDao(trainerDao);
         userNameGenerator = new UserNameGenerator();
-        traineeDao = new TraineeDaoImpl();
-        trainerDao = new TrainerDaoImpl();
-        userNameGenerator.setTraineeDao(traineeDao);
-        userNameGenerator.setTrainerDao(trainerDao);
+
+        userNameGenerator.setTraineeService(traineeService);
+        userNameGenerator.setTrainerService(trainerService);
     }
 
     @Test
@@ -35,10 +58,6 @@ public class UserNameGeneratorTest {
         String firstName = "John";
         String lastName = "Doe";
         String expectedUsername = "John.Doe";
-        StorageImpl storage = new StorageImpl();
-        storage.setMyStorage(new HashMap<>());
-        ((TraineeDaoImpl) traineeDao).setStorage(storage);
-        ((TrainerDaoImpl) trainerDao).setStorage(storage);
         // Act
         String generatedUsername = userNameGenerator.generateUsername(firstName, lastName);
 
@@ -54,17 +73,11 @@ public class UserNameGeneratorTest {
         String expectedUsername = "John.Doe1";
 
         // Simulate existing trainee with the same username
-        Map<Long, Object> traineeStorage = new HashMap<>();
-        Trainee trainee = new Trainee("John", "Doe", "John.Doe", "password", true, null, null);
-        traineeStorage.put(1L, trainee);
-        StorageImpl storageImpl = new StorageImpl();
-        storageImpl.setMyStorage(traineeStorage);
-        ((TraineeDaoImpl) traineeDao).setStorage(storageImpl);
+        User user = new User("John", "Doe", "John.Doe", "password", true);
+        Trainee trainee = new Trainee(null, null);
+        trainee.setUser(user);
 
-        // Simulate empty trainer storage
-        StorageImpl emptyStorage = new StorageImpl();
-        emptyStorage.setMyStorage(new HashMap<>());
-        ((TrainerDaoImpl) trainerDao).setStorage(emptyStorage);
+        traineeService.createTrainee(trainee);
 
         // Act
         String generatedUsername = userNameGenerator.generateUsername(firstName, lastName);
@@ -79,19 +92,12 @@ public class UserNameGeneratorTest {
         String lastName = "Doe";
         String expectedUsername = "John.Doe1";
 
-        // Simulate existing trainee with the same username
-        Map<Long, Object> traineeStorage = new HashMap<>();
-        Trainee trainee = new Trainee("John", "Doe", "John.Doe", "password", true, null, null);
-        traineeStorage.put(1L, trainee);
-        StorageImpl traineeStorageImpl = new StorageImpl();
-        traineeStorageImpl.setMyStorage(traineeStorage);
-        ((TraineeDaoImpl) traineeDao).setStorage(traineeStorageImpl);
+        User user = new User("John", "Doe", "John.Doe", "password", true);
+        Trainee trainee = new Trainee( null, null);
 
-        // Simulate empty trainer storage
-        StorageImpl emptyStorage = new StorageImpl();
-        emptyStorage.setMyStorage(new HashMap<>());
-        ((TrainerDaoImpl) trainerDao).setStorage(emptyStorage);
+        trainee.setUser(user);
 
+        traineeService.createTrainee(trainee);
         // Act
         String generatedUsername = userNameGenerator.generateUsername(firstName, lastName);
 
@@ -106,18 +112,11 @@ public class UserNameGeneratorTest {
         String lastName = "Doe";
         String expectedUsername = "John.Doe1";
 
-        // Simulate existing trainer with the same username
-        Map<Long, Object> trainerStorage = new HashMap<>();
-        Trainer trainer = new Trainer("John", "Doe", "John.Doe", "password", true, null);
-        trainerStorage.put(1L, trainer);
-        StorageImpl trainerStorageImpl = new StorageImpl();
-        trainerStorageImpl.setMyStorage(trainerStorage);
-        ((TrainerDaoImpl) trainerDao).setStorage(trainerStorageImpl);
-
-        // Simulate empty trainee storage
-        StorageImpl emptyStorage = new StorageImpl();
-        emptyStorage.setMyStorage(new HashMap<>());
-        ((TraineeDaoImpl) traineeDao).setStorage(emptyStorage);
+        User user = new User("John", "Doe", "John.Doe", "password", true);
+        Trainer trainer = new Trainer();
+        trainer.setSpecialization(null);
+        trainer.setUser(user);
+        trainerService.createTrainer(trainer);
 
         // Act
         String generatedUsername = userNameGenerator.generateUsername(firstName, lastName);
@@ -133,20 +132,16 @@ public class UserNameGeneratorTest {
         String lastName = "Doe";
         String expectedUsername = "John.Doe2";
 
-        // Simulate existing trainee and trainer with the same username
-        Map<Long, Object> traineeStorage = new HashMap<>();
-        Trainee trainee = new Trainee("John", "Doe", "John.Doe", "password", true, null, null);
-        traineeStorage.put(1L, trainee);
-        StorageImpl traineeStorageImpl = new StorageImpl();
-        traineeStorageImpl.setMyStorage(traineeStorage);
-        ((TraineeDaoImpl) traineeDao).setStorage(traineeStorageImpl);
+        User user = new User("John", "Doe", "John.Doe", "password", true);
+        Trainee trainee = new Trainee(null, null);
+        trainee.setUser(user);
+        traineeService.createTrainee(trainee);
 
-        Map<Long, Object> trainerStorage = new HashMap<>();
-        Trainer trainer = new Trainer("John", "Doe", "John.Doe", "password", true, null);
-        trainerStorage.put(1L, trainer);
-        StorageImpl trainerStorageImpl = new StorageImpl();
-        trainerStorageImpl.setMyStorage(trainerStorage);
-        ((TrainerDaoImpl) trainerDao).setStorage(trainerStorageImpl);
+        user = new User("John", "Doe", "John.Doe", "password", true);
+        Trainer trainer = new Trainer();
+        trainer.setUser(user);
+        trainer.setSpecialization(null);
+        trainerService.createTrainer(trainer);
 
         // Act
         String generatedUsername = userNameGenerator.generateUsername(firstName, lastName);
@@ -162,12 +157,6 @@ public class UserNameGeneratorTest {
         String lastName = "Doe_2";
         String expectedUsername = "Jo-hn.Doe_2";
 
-        // Simulate empty storage
-        StorageImpl emptyStorage = new StorageImpl();
-        emptyStorage.setMyStorage(new HashMap<>());
-        ((TraineeDaoImpl) traineeDao).setStorage(emptyStorage);
-        ((TrainerDaoImpl) trainerDao).setStorage(emptyStorage);
-
         // Act
         String generatedUsername = userNameGenerator.generateUsername(firstName, lastName);
 
@@ -182,17 +171,10 @@ public class UserNameGeneratorTest {
         String lastName = "doE";
         String expectedUsername = "jOHN.doE";
 
-        // Simulate empty storage
-        StorageImpl emptyStorage = new StorageImpl();
-        emptyStorage.setMyStorage(new HashMap<>());
-        ((TraineeDaoImpl) traineeDao).setStorage(emptyStorage);
-        ((TrainerDaoImpl) trainerDao).setStorage(emptyStorage);
-
         // Act
         String generatedUsername = userNameGenerator.generateUsername(firstName, lastName);
 
         // Assert
         assertEquals(expectedUsername, generatedUsername);
     }
-
 }

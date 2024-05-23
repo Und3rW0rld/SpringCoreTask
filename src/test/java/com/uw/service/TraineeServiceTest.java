@@ -1,27 +1,37 @@
 package com.uw.service;
 
-import com.uw.dao.TraineeDao;
 import com.uw.dao.TraineeDaoImpl;
 import com.uw.model.Trainee;
-import com.uw.util.Storage;
-import com.uw.util.StorageImpl;
+import com.uw.model.User;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 
 public class TraineeServiceTest {
 
-    Storage storage = new StorageImpl();
-    TraineeService traineeService = new TraineeServiceImpl();
-    TraineeDao traineeDao = new TraineeDaoImpl();
+    SessionFactory sessionFactory;
+    private final TraineeService traineeService = new TraineeServiceImpl();
+
+    @After
+    public void tearDown() {
+        if (sessionFactory != null) {
+            sessionFactory.close();
+        }
+    }
 
     @Before
-    public void setUp(){
-        ((StorageImpl) storage).setMyStorage(new HashMap<>());
-        ((TraineeDaoImpl) traineeDao).setStorage(storage);
+    public void setUp() {
+        sessionFactory = new MetadataSources(new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build())
+                .buildMetadata()
+                .buildSessionFactory();
+        TraineeDaoImpl traineeDao = new TraineeDaoImpl();
+        traineeDao.setSessionFactory(sessionFactory);
         ((TraineeServiceImpl) traineeService).setTraineeDao(traineeDao);
     }
 
@@ -35,15 +45,19 @@ public class TraineeServiceTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 2, 12);
         String address = "myAddress";
 
+        User user = new User(name, lastName, username, password,true);
+
         //Creating trainee
-        Trainee trainee = new Trainee(name, lastName, username, password,true, dateOfBirth, address);
+        Trainee trainee = new Trainee(dateOfBirth, address);
+        trainee.setUser(user);
+
         //Creating trainee in the service and getting the id
         long id = traineeService.createTrainee(trainee);
 
         assertTrue(id > 0);
         assertNotNull(trainee);
         assertNotNull(traineeService.selectTraineeProfile(id));
-        assertEquals(traineeService.selectTraineeProfile(id), trainee);
+        assertEquals(traineeService.selectTraineeProfile(id).toString(), trainee.toString());
 
     }
     @Test
@@ -56,8 +70,9 @@ public class TraineeServiceTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         String address = "InitialAddress";
 
-        Trainee initialTrainee = new Trainee(name, lastName, username, password, true, dateOfBirth, address);
-
+        User user = new User( name, lastName, username, password, true );
+        Trainee initialTrainee = new Trainee( dateOfBirth, address );
+        initialTrainee.setUser( user );
         // Crear el trainee en el servicio y obtener el ID
         long id = traineeService.createTrainee(initialTrainee);
 
@@ -66,9 +81,9 @@ public class TraineeServiceTest {
         String updatedLastName = "UpdatedLastName";
         String updatedAddress = "UpdatedAddress";
 
-        initialTrainee.setFirstName(updatedName);
-        initialTrainee.setLastName(updatedLastName);
-        initialTrainee.setAdress(updatedAddress);
+        initialTrainee.getUser().setFirstName(updatedName);
+        initialTrainee.getUser().setLastName(updatedLastName);
+        initialTrainee.setAddress(updatedAddress);
 
         // Llamar al método updateTrainee
         traineeService.updateTrainee(initialTrainee);
@@ -77,9 +92,9 @@ public class TraineeServiceTest {
         Trainee updatedTrainee = traineeService.selectTraineeProfile(id);
 
         assertNotNull(updatedTrainee);
-        assertEquals(updatedName, updatedTrainee.getFirstName());
-        assertEquals(updatedLastName, updatedTrainee.getLastName());
-        assertEquals(updatedAddress, updatedTrainee.getAdress());
+        assertEquals(updatedName, updatedTrainee.getUser().getFirstName());
+        assertEquals(updatedLastName, updatedTrainee.getUser().getLastName());
+        assertEquals(updatedAddress, updatedTrainee.getAddress());
     }
 
     // Test para deleteTrainee
@@ -93,7 +108,8 @@ public class TraineeServiceTest {
         LocalDate dateOfBirth = LocalDate.of(1990, 5, 15);
         String address = "TestAddress";
 
-        Trainee trainee = new Trainee(name, lastName, username, password, true, dateOfBirth, address);
+        //User name, lastName, username, password, true,
+        Trainee trainee = new Trainee(dateOfBirth, address);
 
         // Crear el trainee en el servicio y obtener el ID
         long id = traineeService.createTrainee(trainee);
@@ -136,9 +152,9 @@ public class TraineeServiceTest {
         String password = "testPassword";
         LocalDate dateOfBirth = LocalDate.of(1990, 5, 15);
         String address = "TestAddress";
-
-        Trainee trainee = new Trainee(name, lastName, username, password, true, dateOfBirth, address);
-
+        User user = new User(name, lastName, username, password, true);
+        Trainee trainee = new Trainee(dateOfBirth, address);
+        trainee.setUser(user);
         // Crear el trainee en el servicio y obtener el ID
         long id = traineeService.createTrainee(trainee);
 
@@ -152,7 +168,7 @@ public class TraineeServiceTest {
         }
 
         // Verificar que el trainee seleccionado sea igual al trainee creado
-        assertEquals(trainee, selectedTrainee);
+        assertEquals(trainee.toString(), selectedTrainee.toString());
     }
 
     // Test para selectTraineeProfile (caso fallido)
@@ -162,6 +178,5 @@ public class TraineeServiceTest {
         long nonExistentId = 12345L;
         traineeService.selectTraineeProfile(nonExistentId);
     }
-
 
 }

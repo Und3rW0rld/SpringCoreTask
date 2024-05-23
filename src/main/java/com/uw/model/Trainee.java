@@ -1,17 +1,50 @@
 package com.uw.model;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 
-public class Trainee extends User{
 
+@Entity
+@Table(name="TRAINEE")
+public class Trainee{
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID", nullable = false)
+    private long id;
+
+    @Column(name = "DATE_OF_BIRTH")
     private LocalDate dateOfBirth;
-    private String adress;
-    private long userId;
 
-    public Trainee(String firstName, String lastName, String username, String password, boolean isActive, LocalDate dateOfBirth, String adress) {
-        super(firstName, lastName, username, password, isActive);
+    @Column(name = "ADDRESS")
+    private String address;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "USER_ID", referencedColumnName = "ID")
+    private User user;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "TRAINEE_TRAINER",
+            joinColumns = @JoinColumn(name = "TRAINEE_ID"),
+            inverseJoinColumns = @JoinColumn(name = "TRAINER_ID")
+    )
+    private List<Trainer> trainers;
+
+    public Trainee(){
+
+    }
+
+    public List<Trainer> getTrainers() {
+        return trainers;
+    }
+
+    public Trainee(LocalDate dateOfBirth, String address) {
         this.dateOfBirth = dateOfBirth;
-        this.adress = adress;
+        this.address = address;
     }
 
     public LocalDate getDateOfBirth() {
@@ -22,28 +55,36 @@ public class Trainee extends User{
         this.dateOfBirth = dateOfBirth;
     }
 
-    public String getAdress() {
-        return adress;
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     @Override
     public String toString() {
-        return  super.toString()+" [" +
+        return  " [" +
                 "dateOfBirth=" + dateOfBirth +
-                ", adress='" + adress + '\'' +
-                ", userId=" + userId +
+                ", address='" + address + '\'' +
+                ", userId=" + user.getId() +
                 "] " ;
-    }
-
-    public void setAdress(String adress) {
-        this.adress = adress;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
-
-    public long getUserId() {
-        return this.userId;
     }
 }
