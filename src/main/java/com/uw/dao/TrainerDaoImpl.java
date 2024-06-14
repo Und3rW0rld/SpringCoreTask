@@ -10,11 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @Repository
 public class TrainerDaoImpl implements TrainerDao{
 
     private SessionFactory sessionFactory;
+    private static final Logger logger = Logger.getLogger(TrainerDaoImpl.class.getName());
 
     @Autowired
     public void setSessionFactory(SessionFactory sessionFactory){
@@ -23,91 +25,83 @@ public class TrainerDaoImpl implements TrainerDao{
 
     @Override
     public void create(Trainer trainer) {
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.persist(trainer);
             transaction.commit();
-        } catch ( Exception e ){
-            transaction.rollback();
-        }finally{
-            session.close();
+        } catch (Exception e) {
+            if(transaction != null){
+                transaction.rollback();
+            }
+            logger.severe("Failed to create trainer transaction");
+            logger.severe(e.getMessage());
         }
     }
 
     @Override
     public void update(Trainer trainer) {
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.merge(trainer);
             transaction.commit();
-        } catch ( Exception e ){
-            transaction.rollback();
-        }finally {
-            session.close();
+        } catch (Exception e) {
+            if( transaction != null ){
+                transaction.rollback();
+            }
+            logger.severe("Error trying to update trainer");
+            logger.severe(e.getMessage());
         }
     }
 
     @Override
     public Trainer selectProfile(long id) {
-        Session session = sessionFactory.openSession();
         Trainer trainer = null;
-        try{
+        try(Session session = sessionFactory.openSession()){
             trainer = session.get(Trainer.class, id);
         }catch ( Exception e ){
-            e.printStackTrace();
-        }finally{
-            session.close();
+            logger.severe("Trainer not found");
+            logger.severe(e.getMessage());
         }
         return trainer;
     }
 
     @Override
     public List<Trainer> findAll() {
-        Session session = sessionFactory.openSession();
-        List<Trainer> trainerList = null;
-
-        try {
-            // Crear un objeto Criteria para la clase de entidad User
+        List<Trainer> trainerList = List.of();
+        try (Session session = sessionFactory.openSession()) {
             Query query = session.createQuery("select t from Trainer t", Trainer.class);
             trainerList = query.getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            session.close();
+            logger.severe("Can not find trainers list");
+            logger.severe(e.getMessage());
         }
         return trainerList;
     }
 
     @Override
     public Trainer findTrainerByUser(User user) {
-        Session session = sessionFactory.openSession();
         Trainer trainer = null;
-        try{
+        try (Session session = sessionFactory.openSession()) {
             org.hibernate.query.Query<Trainer> query = session.createQuery("select t from Trainer t where t.user = :user").setParameter("user", user);
             trainer = query.getSingleResult();
         }catch (Exception e){
-            e.printStackTrace();
-        }finally{
-            session.close();
+            logger.severe("Can not find trainer by user");
+            logger.severe(e.getMessage());
         }
         return trainer;
     }
 
     @Override
     public Trainer findTrainerByUsername(String username) {
-        Session session = sessionFactory.openSession();
         Trainer trainer = null;
-        try{
+        try(Session session = sessionFactory.openSession()){
             org.hibernate.query.Query<Trainer> query = session.createQuery("select t from Trainer t where t.user.username = :username").setParameter("username", username);
             trainer = query.getSingleResult();
         }catch (Exception e){
-            e.printStackTrace();
-        }finally{
-            session.close();
+            logger.severe("Can not find trainer by username");
+            logger.severe(e.getMessage());
         }
         return trainer;
     }

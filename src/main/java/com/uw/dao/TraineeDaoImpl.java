@@ -2,7 +2,6 @@ package com.uw.dao;
 
 import com.uw.model.Trainee;
 import com.uw.model.Trainer;
-import com.uw.model.User;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import org.hibernate.HibernateException;
@@ -14,12 +13,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Repository
 public class TraineeDaoImpl implements TraineeDao{
 
     private SessionFactory sessionFactory;
-
+    private static final Logger logger = Logger.getLogger(TraineeDaoImpl.class.getName());
     @Autowired
     public void setSessionFactory( SessionFactory sessionFactory ){
         this.sessionFactory = sessionFactory;
@@ -27,97 +27,84 @@ public class TraineeDaoImpl implements TraineeDao{
 
     @Override
     public void create(Trainee trainee) {
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
-        try{
+        try(Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();
             session.persist(trainee);
             transaction.commit();
-        }catch( Exception e ){
-            transaction.rollback();
-        }finally{
-            session.close();
+            logger.fine("Trainee created successfully");
+        }catch( HibernateException | NoResultException e ){
+            if(transaction != null) {
+                transaction.rollback();
+            }
+            logger.severe("Error while creating transaction");
         }
     }
 
     @Override
     public void update(Trainee trainee) {
-        Session session = sessionFactory.openSession();
-        Transaction transaction = null;
-        try{
-            transaction = session.beginTransaction();
-            session.merge(trainee);
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.update(trainee);
             transaction.commit();
-        }catch(Exception e){
-            transaction.rollback();
-        }finally{
-            session.close();
+            logger.fine("Trainee updated successfully");
+        } catch ( HibernateException | NoResultException e) {
+            logger.severe("Failed to update trainee");
         }
     }
 
     @Override
     public void delete(long id) {
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
-        try{
+        try(Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();
             Trainee traineeToDelete = session.get(Trainee.class, id);
             session.remove(traineeToDelete);
             transaction.commit();
-        }catch(Exception e){
-            transaction.rollback();
-        }finally{
-            session.close();
+            logger.fine("Trainee deleted successfully");
+        }catch( HibernateException | NoResultException e){
+            if(transaction != null){
+                transaction.rollback();
+            }
+            logger.severe("Failed to delete trainee");
         }
     }
 
     @Override
     public Trainee selectProfile(long id) {
-        Session session = this.sessionFactory.openSession();
-        Transaction transaction = null;
         Trainee trainee = null;
-        try{
+        try( Session session = this.sessionFactory.openSession() ){
             trainee = session.get (Trainee.class, id);
-        }catch ( Exception e){
-            e.printStackTrace();
-        }finally{
-            session.close();
+        }catch ( HibernateException | NoResultException e){
+            logger.severe("Could not find trainee instance");
+            logger.severe(e.getMessage());
         }
         return trainee;
     }
 
     @Override
     public List<Trainee> findAll() {
-        Session session = sessionFactory.openSession();
-        List<Trainee> traineeList = null;
+        List<Trainee> traineeList = List.of();
 
-        try {
-            // Crear un objeto Criteria para la clase de entidad User
+        try (Session session = sessionFactory.openSession()) {
             Query query = session.createQuery("select t from Trainee t", Trainee.class);
             traineeList = query.getResultList();
-        } catch (HibernateException e) {
-            e.printStackTrace();
-        } catch( NoResultException e){
-            e.printStackTrace();
-        }finally {
-            session.close();
+        } catch (HibernateException | NoResultException e) {
+            logger.severe("Failed to find trainees");
+            logger.severe(e.getMessage());
         }
         return traineeList;
     }
 
     @Override
     public Trainee existTraineeByUserId(long id) {
-        Session session = sessionFactory.openSession();
         Trainee trainee = null;
-        try{
+        try (Session session = sessionFactory.openSession()) {
             org.hibernate.query.Query<Trainee> query = session.createQuery("select t from Trainee t where t.user.id = :id", Trainee.class).setParameter("id", id);
             trainee = query.getSingleResult();
-        }catch ( NoResultException e ){
-            // Ignore this
-        }catch(Exception e){
-            e.printStackTrace();
-        }finally {
-            session.close();
+        }catch ( HibernateException | NoResultException e ){
+            logger.severe("Could not find trainee instance");
+            logger.severe(e.getMessage());
         }
         return trainee;
     }
@@ -129,7 +116,8 @@ public class TraineeDaoImpl implements TraineeDao{
             org.hibernate.query.Query<Trainee> query = session.createQuery("select t from Trainee t where t.user.username = :username", Trainee.class).setParameter("username", username);
             trainee = query.getSingleResult();
         }catch(Exception e){
-            e.printStackTrace();
+            logger.severe("Could not find trainee instance");
+            logger.severe(e.getMessage());
         }
         return trainee;
     }
@@ -144,7 +132,8 @@ public class TraineeDaoImpl implements TraineeDao{
             transaction.commit();
             return trainee.getUser().isActive();
         }catch (Exception e){
-            e.printStackTrace();
+            logger.severe("Something went wrong: Active or deactivate process failed");
+            logger.severe(e.getMessage());
         }
         return false;
     }
@@ -158,7 +147,8 @@ public class TraineeDaoImpl implements TraineeDao{
             session.remove(trainee);
             transaction.commit();
         }catch ( Exception e ){
-            e.printStackTrace();
+            logger.severe("Failed to delete trainee By Username");
+            logger.severe(e.getMessage());
         }
     }
 
@@ -171,7 +161,8 @@ public class TraineeDaoImpl implements TraineeDao{
                     .setParameter("traineeId", trainee.getId())
                     .getResultList();
         }catch ( Exception e ){
-            e.printStackTrace();
+            logger.severe("Failed to find trainers of the trainee");
+            logger.severe(e.getMessage());
         }
         return trainers;
     }

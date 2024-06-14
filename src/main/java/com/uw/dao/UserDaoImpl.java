@@ -8,10 +8,14 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.logging.Logger;
+
 @Repository
 public class UserDaoImpl implements UserDao {
 
     private SessionFactory sessionFactory;
+    private static final Logger logger = Logger.getLogger(UserDaoImpl.class.getName());
 
     @Autowired
     public void setSessionFactory( SessionFactory sessionFactory ){
@@ -20,64 +24,73 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public boolean validateUsername(String username) {
-        Session session = sessionFactory.openSession();
         User user = null;
-        try{
+        try(Session session = sessionFactory.openSession()){
             Query<User> query = session.createQuery("select u from User u where u.username = :username", User.class).setParameter("username", username);
             user = query.getSingleResult();
         }catch( Exception e ){
-            e.printStackTrace();
-        }finally {
-            session.close();
+            logger.severe("Failed to validate user");
+            logger.severe(e.getMessage());
         }
         return user != null;
     }
 
     @Override
     public boolean validatePassword(String username, String password) {
-        Session session = sessionFactory.openSession();
         User user = null;
-        try{
+        try(Session session = sessionFactory.openSession()){
             Query<User> query = session.createQuery("select u from User u where u.username = :username and u.password = :password", User.class).setParameter("username", username).setParameter("password", password);
             user = query.getSingleResult();
         }catch( Exception e ){
-            e.printStackTrace();
-        }finally {
-            session.close();
+            logger.severe("Failed to validate user");
+            logger.severe(e.getMessage());
         }
         return user != null;
     }
 
     @Override
     public User findUserByUsername(String username) {
-        Session session = sessionFactory.openSession();
         User user = null;
-        try{
+        try(Session session = sessionFactory.openSession()){
             Query<User> query = session.createQuery("select u from User u where u.username = :username", User.class).setParameter("username", username);
             user = query.getSingleResult();
         }catch( Exception e ){
-            e.printStackTrace();
-        }finally {
-            session.close();
+            logger.severe("Failed to get user by username");
+            logger.severe(e.getMessage());
         }
         return user;
     }
 
     @Override
     public boolean updateUser(User user) {
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
-        try{
+        try(Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();
             session.merge(user);
             transaction.commit();
             return true;
         } catch( Exception e ){
-            e.printStackTrace();
-            transaction.rollback();
-        }finally {
-            session.close();
+            if(transaction != null){
+                transaction.rollback();
+            }
+            logger.severe("Failed to update user");
+            logger.severe(e.getMessage());
         }
         return false;
+    }
+
+    @Override
+    public List<User> findAll() {
+        List<User> usersList = null;
+
+        try( Session session = sessionFactory.openSession() ){
+            Query<User> query = session.createQuery("select u from User u", User.class);
+            usersList = query.getResultList();
+        } catch ( Exception e ){
+            logger.severe("Failed to find users");
+            logger.severe(e.getMessage());
+        }
+
+        return usersList;
     }
 }
