@@ -16,8 +16,10 @@ To run the project you will need to go to the ./executable folder and run the fo
 java -jar GymCRMSystem-1.0-SNAPSHOT.jar
 ```
 
-Next to do this, you will see something similar to this:
-![image](https://github.com/Und3rW0rld/SpringCoreTask/assets/117226776/bf7c3b64-8c11-455a-9814-c7f7ebc29bb0)
+You can explore the api structure (http://localhost:8080/swagger-ui/index.html) and you will see something like this:
+
+![image](https://github.com/Und3rW0rld/SpringCoreTask/assets/117226776/e701fddc-9b4c-4a35-aec1-0b6799d34412)
+
 
 Explore!
 
