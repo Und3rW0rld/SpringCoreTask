@@ -30,16 +30,31 @@ public class TrainingType {
         this.typeName = typeName;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public void setTypeName(String typeName){
-        if (typeName.equalsIgnoreCase("YOGA")){
-            this.typeName = TrainingTypeEnum.YOGA;
-        }else if (typeName.equalsIgnoreCase("STRENGTH")){
-            this.typeName = TrainingTypeEnum.STRENGTH;
-        }else if (typeName.equalsIgnoreCase("FUNCTIONAL")){
-            this.typeName = TrainingTypeEnum.FUNCTIONAL;
-        }else if (typeName.equalsIgnoreCase("CARDIO")){
-        }else{
-            this.typeName = TrainingTypeEnum.OTHER;
+        switch (typeName.toUpperCase()) {
+            case "YOGA":
+                this.typeName = TrainingTypeEnum.YOGA;
+                break;
+            case "STRENGTH":
+                this.typeName = TrainingTypeEnum.STRENGTH;
+                break;
+            case "FUNCTIONAL":
+                this.typeName = TrainingTypeEnum.FUNCTIONAL;
+                break;
+            case "CARDIO":
+                this.typeName = TrainingTypeEnum.CARDIO;
+                break;
+            default:
+                this.typeName = TrainingTypeEnum.OTHER;
+                break;
         }
     }
 

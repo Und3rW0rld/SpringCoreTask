@@ -6,10 +6,6 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @ComponentScan("com.uw")
@@ -20,12 +16,6 @@ public class AppConfig {
         return new MetadataSources(new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build())
                 .buildMetadata()
                 .buildSessionFactory();
-    }
-
-    @Bean
-    @Scope("prototype")
-    public Map<Long, Object> myStorage() {
-        return new HashMap<>();
     }
 
 }

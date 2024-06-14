@@ -14,16 +14,16 @@ public class Training {
     @Column(name = "ID")
     private long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Trainee trainee;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Trainer trainer;
 
     @Column(name="TRAINING_NAME")
     private String trainingName;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private TrainingType trainingType;
 
     @Column(name="TRAINING_DATE")

@@ -42,6 +42,10 @@ public class Trainee{
         return trainers;
     }
 
+    public void setTrainers(List<Trainer> trainers){
+        this.trainers = trainers;
+    }
+
     public Trainee(LocalDate dateOfBirth, String address) {
         this.dateOfBirth = dateOfBirth;
         this.address = address;

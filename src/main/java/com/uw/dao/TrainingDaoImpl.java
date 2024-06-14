@@ -11,11 +11,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Repository
 public class TrainingDaoImpl implements TrainingDao{
 
     private SessionFactory sessionFactory;
+    private static final Logger logger = Logger.getLogger(TrainingDaoImpl.class.getName());
 
     @Autowired
     public void setSessionFactory(SessionFactory sessionFactory){
@@ -24,33 +26,31 @@ public class TrainingDaoImpl implements TrainingDao{
 
     @Override
     public void create( Training training ) {
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
-        try{
+        try (Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();
             session.persist(training);
-            session.flush();
             transaction.commit();
         }catch( Exception e ) {
-            transaction.rollback();
-        }finally {
-            session.close();
+            if (transaction != null){
+                transaction.rollback();
+            }
+            logger.severe("Failed to create training");
+            logger.severe(e.getMessage());
         }
     }
 
     @Override
     public Training selectProfile(long id) {
-        Session session = sessionFactory.openSession();
         Training training = null;
-        try {
+        try (Session session = sessionFactory.openSession()) {
             String hql = "FROM Training t WHERE t.id = :id";
             training = session.createQuery(hql, Training.class)
                     .setParameter("id", id)
                     .uniqueResult();
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            session.close();
+            logger.severe("Failed to select training profile");
+            logger.severe(e.getMessage());
         }
         return training;
     }
@@ -61,18 +61,18 @@ public class TrainingDaoImpl implements TrainingDao{
         try(Session session = sessionFactory.openSession()){
             trainings = session.createQuery("select t from Training t ", Training.class).getResultList();
         }catch (Exception e){
-            e.printStackTrace();
+            logger.severe("Could not find training list");
+            logger.severe(e.getMessage());
         }
         return trainings;
     }
 
     @Override
     public List<Training> getTraineeTrainings(String username, LocalDate fromDate, LocalDate toDate, String trainerName, TrainingType trainingType){
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
         List<Training> results = null;
 
-        try {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
 
             StringBuilder queryStr = new StringBuilder("SELECT t FROM Training t WHERE t.trainee.user.username = :username");
@@ -112,21 +112,18 @@ public class TrainingDaoImpl implements TrainingDao{
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
-        } finally {
-            session.close();
+            logger.severe("Failed to execute query");
+            logger.severe(e.getMessage());
         }
-
         return results;
     }
 
     @Override
     public List<Training> getTrainerTrainings(String username, LocalDate startDate, LocalDate endDate, String traineeName) {
-        Session session = sessionFactory.openSession();
         Transaction transaction = null;
         List<Training> results = null;
 
-        try {
+        try ( Session session = sessionFactory.openSession() ){
             transaction = session.beginTransaction();
 
             StringBuilder queryStr = new StringBuilder("SELECT t FROM Training t WHERE t.trainer.user.username = :username");
@@ -160,9 +157,8 @@ public class TrainingDaoImpl implements TrainingDao{
             if (transaction != null) {
                 transaction.rollback();
             }
-            System.out.println("No se encontró entrenamiento con estas characteristics");
-        } finally {
-            session.close();
+            logger.severe("Training with these characteristics was not found");
+            logger.severe(e.getMessage());
         }
 
         return results;
