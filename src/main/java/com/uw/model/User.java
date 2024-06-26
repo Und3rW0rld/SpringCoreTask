@@ -1,6 +1,11 @@
 package com.uw.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.util.Objects;
 
@@ -30,13 +35,15 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", username='" + username + '\'' +
-                ", isActive=" + isActive +
-                '}';
+        return """
+           User{
+               id=%d,
+               firstName='%s',
+               lastName='%s',
+               username='%s',
+               isActive=%b
+           }
+           """.formatted(id, firstName, lastName, username, isActive);
     }
 
     public User(){

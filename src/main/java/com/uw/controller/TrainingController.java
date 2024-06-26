@@ -10,13 +10,21 @@ import com.uw.service.AuthService;
 import com.uw.service.TraineeService;
 import com.uw.service.TrainerService;
 import com.uw.service.TrainingService;
+import com.uw.util.ErrorMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -45,7 +53,7 @@ public class TrainingController {
             ){
         String[] credentials = AuthService.decodeCredentials(auth);
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -54,17 +62,17 @@ public class TrainingController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         Trainee trainee = traineeService.findTraineeByUsername(trainingRequest.getTraineeUsername());
         if (trainee == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         Trainer trainer = trainerService.findTrainerByUsername(trainingRequest.getTrainerUsername());
         if (trainer == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainer not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINER_NOT_FOUND);
         }
 
         Training training = new Training();

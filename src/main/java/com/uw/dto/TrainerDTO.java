@@ -1,7 +1,5 @@
 package com.uw.dto;
 
-import com.uw.model.User;
-
 import java.util.List;
 
 public class TrainerDTO {
@@ -85,13 +83,16 @@ public class TrainerDTO {
 
     @Override
     public String toString() {
-        return "TrainerDTO{" +
-                "id=" + id +
-                ", specialization='" + specialization + '\'' +
-                ", username='" + username + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", trainees=" + trainees +
-                '}';
+        return """
+           TrainerDTO{
+               id=%d,
+               specialization='%s',
+               username='%s',
+               firstName='%s',
+               lastName='%s',
+               trainees=%s
+           }
+           """.formatted(id, specialization, username, firstName, lastName, trainees);
     }
+
 }

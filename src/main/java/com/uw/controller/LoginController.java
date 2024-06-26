@@ -8,7 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("api/v1/login")
@@ -23,7 +27,7 @@ public class LoginController {
     @GetMapping
     public ResponseEntity<String> login(@RequestBody LoginDTO loginDTO){
         if( loginDTO.getUsername() == null || loginDTO.getPassword() == null ){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You must send all the fields");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please provide a valid user and password");
         }
 
         if(!userService.validateUsername(loginDTO.getUsername())){
@@ -44,7 +48,7 @@ public class LoginController {
     @PutMapping
     public ResponseEntity<String> changePassword(@RequestBody LoginDTO loginDTO){
         if( loginDTO.getUsername() == null || loginDTO.getPassword() == null || loginDTO.getNewPassword() == null){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You must send all the fields");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Make sure to send the username, old password and the new password");
         }
 
         if (!userService.validateUsername(loginDTO.getUsername())) {

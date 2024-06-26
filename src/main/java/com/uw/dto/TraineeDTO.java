@@ -1,6 +1,5 @@
 package com.uw.dto;
 
-import com.uw.model.Trainer;
 import java.time.LocalDate;
 import java.util.List;
 

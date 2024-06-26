@@ -6,18 +6,34 @@ import com.uw.dto.TrainingDTO;
 import com.uw.dto.UpdateTrainersDTO;
 import com.uw.mapper.TraineeMapper;
 import com.uw.mapper.TrainerMapper;
-import com.uw.model.*;
+import com.uw.metrics.UserMetrics;
+import com.uw.model.Trainee;
+import com.uw.model.Trainer;
+import com.uw.model.User;
+import com.uw.model.TrainingType;
 import com.uw.service.AuthService;
 import com.uw.service.TraineeService;
 import com.uw.service.TrainerService;
 import com.uw.service.TrainingService;
+import com.uw.util.ErrorMessages;
 import com.uw.util.PasswordGenerator;
 import com.uw.util.UserNameGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,6 +50,7 @@ public class TraineeController {
     private final PasswordGenerator passwordGenerator;
     private final AuthService authService;
     private final TrainingService trainingService;
+    private UserMetrics userMetrics;
 
     public TraineeController(TraineeService traineeService, TrainerService trainerService, UserNameGenerator userNameGenerator,
                              PasswordGenerator passwordGenerator, AuthService authService,
@@ -46,6 +63,13 @@ public class TraineeController {
         this.trainingService = trainingService;
     }
 
+
+
+    @Autowired
+    public void setUserMetrics(UserMetrics userMetrics) {
+        this.userMetrics = userMetrics;
+    }
+
     @GetMapping("/{username}")
     public ResponseEntity<?> getTraineeProfile(
             @PathVariable("username") String username,
@@ -53,7 +77,7 @@ public class TraineeController {
         // Decodificar y verificar las credenciales
         String[] credentials = AuthService.decodeCredentials(auth);
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -62,11 +86,11 @@ public class TraineeController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         Trainee trainee = traineeService.findTraineeByUsername(username);
@@ -82,7 +106,7 @@ public class TraineeController {
     public ResponseEntity<String[]> create(@RequestBody TraineeDTO traineeDTO){
         //Validar entradas
         if( traineeDTO.getFirstName() == null || traineeDTO.getLastName() == null){
-            return ResponseEntity.badRequest().body(new String[]{"Error: Missing required fields"});
+            return ResponseEntity.badRequest().body(new String[]{"Error: Both 'firstName' and 'lastName' are required fields"});
         }
         String firstName = traineeDTO.getFirstName();
         String lastName = traineeDTO.getLastName();
@@ -98,7 +122,7 @@ public class TraineeController {
 
         trainee.setUser(user);
         traineeService.createTrainee(trainee);
-
+        userMetrics.incrementUserRegistrationCount();
         return ResponseEntity.ok(new String[]{username, password});
     }
 
@@ -111,7 +135,7 @@ public class TraineeController {
         String[] credentials = AuthService.decodeCredentials(auth);
 
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -120,16 +144,16 @@ public class TraineeController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         Trainee traineeToUpdate = traineeService.findTraineeByUsername(username);
         if (traineeToUpdate == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         // Actualizar solo los campos no nulos del DTO
@@ -162,7 +186,7 @@ public class TraineeController {
                                     @RequestHeader(value = "Authorization") String auth){
         String[] credentials = AuthService.decodeCredentials(auth);
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -171,16 +195,16 @@ public class TraineeController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         Trainee traineeToDelete = traineeService.findTraineeByUsername(username);
         if (traineeToDelete == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         traineeService.deleteTraineeByUserName(username);
@@ -196,7 +220,7 @@ public class TraineeController {
         String[] credentials = AuthService.decodeCredentials(auth);
 
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -205,11 +229,11 @@ public class TraineeController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         Trainee trainee = traineeService.findTraineeByUsername(username);
@@ -242,7 +266,7 @@ public class TraineeController {
         String[] credentials = AuthService.decodeCredentials(auth);
 
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -251,11 +275,11 @@ public class TraineeController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         Trainee trainee = traineeService.findTraineeByUsername(username);
@@ -292,7 +316,7 @@ public class TraineeController {
         String[] credentials = AuthService.decodeCredentials(auth);
 
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -301,11 +325,11 @@ public class TraineeController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         TrainingType trainingType1 = new TrainingType();
@@ -335,7 +359,7 @@ public class TraineeController {
         String[] credentials = AuthService.decodeCredentials(auth);
 
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -344,12 +368,12 @@ public class TraineeController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         Trainee trainee = traineeService.findTraineeByUsername(username);
         if (trainee == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
         }
 
         trainee.getUser().setActive(active);
