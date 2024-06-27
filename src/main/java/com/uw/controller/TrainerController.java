@@ -3,10 +3,14 @@ package com.uw.controller;
 import com.uw.dto.TrainerDTO;
 import com.uw.dto.TrainingDTO;
 import com.uw.mapper.TrainerMapper;
-import com.uw.model.*;
+import com.uw.model.Trainer;
+import com.uw.model.Training;
+import com.uw.model.TrainingType;
+import com.uw.model.User;
 import com.uw.service.AuthService;
 import com.uw.service.TrainerService;
 import com.uw.service.TrainingService;
+import com.uw.util.ErrorMessages;
 import com.uw.util.PasswordGenerator;
 import com.uw.util.UserNameGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +18,16 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,7 +59,7 @@ public class TrainerController {
 
         String[] credentials = AuthService.decodeCredentials(auth);
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -55,11 +68,11 @@ public class TrainerController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainer(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainer not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         Trainer trainer = trainerService.findTrainerByUsername(username);
@@ -109,7 +122,7 @@ public class TrainerController {
 
         String[] credentials = AuthService.decodeCredentials(auth);
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -118,16 +131,16 @@ public class TrainerController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainer(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainer not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINER_NOT_FOUND);
         }
 
         Trainer trainerToUpdate = trainerService.findTrainerByUsername(username);
         if (trainerToUpdate == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainer not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINER_NOT_FOUND);
         }
 
         // Actualizar solo los campos no nulos del DTO
@@ -164,7 +177,7 @@ public class TrainerController {
         // Decodificar y verificar las credenciales
         String[] credentials = AuthService.decodeCredentials(auth);
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -173,11 +186,11 @@ public class TrainerController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         if (!authService.isTrainer(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainer not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINER_NOT_FOUND);
         }
 
         List<Training> trainings = trainingService.getTrainerTrainings(username, periodFrom, periodTo, traineeName);
@@ -203,7 +216,7 @@ public class TrainerController {
 
         String[] credentials = AuthService.decodeCredentials(auth);
         if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
         }
 
         String providedUsername = credentials[0];
@@ -212,12 +225,12 @@ public class TrainerController {
         // Autenticar el usuario
         boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
         }
 
         Trainer trainer = trainerService.findTrainerByUsername(username);
         if (trainer == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainer not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINER_NOT_FOUND);
         }
 
         trainer.getUser().setActive(active);

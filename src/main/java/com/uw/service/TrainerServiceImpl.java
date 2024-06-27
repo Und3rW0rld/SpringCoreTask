@@ -2,12 +2,10 @@ package com.uw.service;
 
 import com.uw.dao.TrainerDao;
 import com.uw.model.Trainer;
-import com.uw.model.Training;
 import com.uw.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service

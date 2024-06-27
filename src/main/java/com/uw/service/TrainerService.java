@@ -1,10 +1,8 @@
 package com.uw.service;
 
 import com.uw.model.Trainer;
-import com.uw.model.Training;
 import com.uw.model.User;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface TrainerService {

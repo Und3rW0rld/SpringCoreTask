@@ -2,13 +2,11 @@ package com.uw.util;
 
 import com.uw.dao.TraineeDaoImpl;
 import com.uw.dao.TrainerDaoImpl;
+import com.uw.dao.UserDaoImpl;
 import com.uw.model.Trainee;
 import com.uw.model.Trainer;
 import com.uw.model.User;
-import com.uw.service.TraineeService;
-import com.uw.service.TraineeServiceImpl;
-import com.uw.service.TrainerService;
-import com.uw.service.TrainerServiceImpl;
+import com.uw.service.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -24,7 +22,8 @@ import static org.junit.Assert.assertEquals;
 public class UserNameGeneratorTest {
 
    private UserNameGenerator userNameGenerator;
-    private TrainerService trainerService = new TrainerServiceImpl();
+   private final UserService userService = new UserServiceImpl();
+   private final TrainerService trainerService = new TrainerServiceImpl();
     SessionFactory sessionFactory;
     private final TraineeService traineeService = new TraineeServiceImpl();
 
@@ -48,8 +47,12 @@ public class UserNameGeneratorTest {
         ((TrainerServiceImpl) trainerService).setTrainerDao(trainerDao);
         userNameGenerator = new UserNameGenerator();
 
-        userNameGenerator.setTraineeService(traineeService);
-        userNameGenerator.setTrainerService(trainerService);
+        UserDaoImpl userDao = new UserDaoImpl();
+        userDao.setSessionFactory(sessionFactory);
+        ((UserServiceImpl) userService).setUserDao(userDao);
+        userNameGenerator = new UserNameGenerator();
+
+        userNameGenerator.setUserServiceImpl(userService);
     }
 
     @Test
