@@ -1,47 +1,39 @@
 package com.uw.service;
 
 import com.uw.model.User;
+import com.uw.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
+import java.util.Optional;
 
 @Service
 public class AuthService {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final TraineeService traineeService;
     private final TrainerService trainerService;
 
     @Autowired
-    public AuthService(UserService userService, TraineeService traineeService, TrainerService trainerService) {
-        this.userService = userService;
+    public AuthService(UserRepository userRepository, TraineeService traineeService, TrainerService trainerService) {
+        this.userRepository = userRepository;
         this.traineeService = traineeService;
         this.trainerService = trainerService;
     }
 
-    public boolean authentication(String username, String password){
-        if (!userService.validateUsername(username)) {
-            // El nombre de usuario no se encuentra en la base de datos
-            return false;
-        }
-        // Verificar si la contraseña es correcta
-        return userService.validatePassword(username, password);
-    }
-
     public boolean isTrainee(String username, String password) {
-        if(!this.authentication(username, password)){
-            return false;
+        Optional<User> user = userRepository.findByUsername(username);
+        User existing;
+        if (user.isPresent()){
+            existing = user.get();
+        }else{
+            throw new IllegalStateException("No user with the given username");
         }
-        User user = userService.findUserByUsername(username);
-        return traineeService.existTraineeByUserId(user.getId()) != null;
+        return traineeService.existTraineeByUserId(existing.getId()) != null;
     }
 
     public boolean isTrainer(String username, String password) {
-        if(!this.authentication(username, password)){
-            return false;
-        }
-        User user = userService.findUserByUsername(username);
         return trainerService.findTrainerByUsername(username) != null;
     }
 
