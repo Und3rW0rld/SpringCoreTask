@@ -11,7 +11,6 @@ import com.uw.model.Trainee;
 import com.uw.model.Trainer;
 import com.uw.model.User;
 import com.uw.model.TrainingType;
-import com.uw.service.AuthService;
 import com.uw.service.TraineeService;
 import com.uw.service.TrainerService;
 import com.uw.service.TrainingService;
@@ -31,7 +30,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -48,18 +46,16 @@ public class TraineeController {
     private final TrainerService trainerService;
     private final UserNameGenerator userNameGenerator;
     private final PasswordGenerator passwordGenerator;
-    private final AuthService authService;
     private final TrainingService trainingService;
     private UserMetrics userMetrics;
 
     public TraineeController(TraineeService traineeService, TrainerService trainerService, UserNameGenerator userNameGenerator,
-                             PasswordGenerator passwordGenerator, AuthService authService,
+                             PasswordGenerator passwordGenerator,
                              TrainingService trainingService) {
         this.traineeService = traineeService;
         this.trainerService = trainerService;
         this.userNameGenerator = userNameGenerator;
         this.passwordGenerator = passwordGenerator;
-        this.authService = authService;
         this.trainingService = trainingService;
     }
 
@@ -72,27 +68,7 @@ public class TraineeController {
 
     @GetMapping("/{username}")
     public ResponseEntity<?> getTraineeProfile(
-            @PathVariable("username") String username,
-            @RequestHeader(value = "Authorization") String auth){
-        // Decodificar y verificar las credenciales
-        String[] credentials = AuthService.decodeCredentials(auth);
-        if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
-        }
-
-        String providedUsername = credentials[0];
-        String providedPassword = credentials[1];
-
-        // Autenticar el usuario
-        boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
-        }
-
-        if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
-        }
-
+            @PathVariable("username") String username){
         Trainee trainee = traineeService.findTraineeByUsername(username);
 
         TraineeDTO traineeProfileDTO = TraineeMapper.toDTO(trainee);
@@ -129,27 +105,7 @@ public class TraineeController {
     @PutMapping("/{username}")
     public ResponseEntity<?> update(
             @RequestBody TraineeDTO traineeDTO,
-            @PathVariable("username") String username,
-            @RequestHeader(value = "Authorization") String auth){
-
-        String[] credentials = AuthService.decodeCredentials(auth);
-
-        if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
-        }
-
-        String providedUsername = credentials[0];
-        String providedPassword = credentials[1];
-
-        // Autenticar el usuario
-        boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
-        }
-
-        if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
-        }
+            @PathVariable("username") String username){
 
         Trainee traineeToUpdate = traineeService.findTraineeByUsername(username);
         if (traineeToUpdate == null) {
@@ -182,25 +138,7 @@ public class TraineeController {
     }
 
     @DeleteMapping("/{username}")
-    public ResponseEntity<?> delete(@PathVariable("username") String username,
-                                    @RequestHeader(value = "Authorization") String auth){
-        String[] credentials = AuthService.decodeCredentials(auth);
-        if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
-        }
-
-        String providedUsername = credentials[0];
-        String providedPassword = credentials[1];
-
-        // Autenticar el usuario
-        boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
-        }
-
-        if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
-        }
+    public ResponseEntity<?> delete(@PathVariable("username") String username){
 
         Trainee traineeToDelete = traineeService.findTraineeByUsername(username);
         if (traineeToDelete == null) {
@@ -214,27 +152,7 @@ public class TraineeController {
 
     @GetMapping("/{username}/not-assigned-trainers")
     public ResponseEntity <?> getNotAssignedActiveTrainers(
-            @PathVariable("username") String username,
-            @RequestHeader(value = "Authorization") String auth) {
-
-        String[] credentials = AuthService.decodeCredentials(auth);
-
-        if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
-        }
-
-        String providedUsername = credentials[0];
-        String providedPassword = credentials[1];
-
-        // Autenticar el usuario
-        boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
-        }
-
-        if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
-        }
+            @PathVariable("username") String username) {
 
         Trainee trainee = traineeService.findTraineeByUsername(username);
 
@@ -260,27 +178,8 @@ public class TraineeController {
     @PutMapping("/{username}/trainers")
     public ResponseEntity<?> updateTraineeTrainers(
             @RequestBody UpdateTrainersDTO updateTrainersDTO,
-            @RequestHeader(value = "Authorization") String auth,
             @PathVariable("username") String username
     ){
-        String[] credentials = AuthService.decodeCredentials(auth);
-
-        if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
-        }
-
-        String providedUsername = credentials[0];
-        String providedPassword = credentials[1];
-
-        // Autenticar el usuario
-        boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
-        }
-
-        if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
-        }
 
         Trainee trainee = traineeService.findTraineeByUsername(username);
 
@@ -310,27 +209,7 @@ public class TraineeController {
             @RequestParam(value = "periodFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate periodFrom,
             @RequestParam(value = "periodTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate periodTo,
             @RequestParam(value = "trainerName", required = false) String trainerName,
-            @RequestParam(value = "trainingType", required = false) String trainingType,
-            @RequestHeader(value = "Authorization") String auth) {
-
-        String[] credentials = AuthService.decodeCredentials(auth);
-
-        if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
-        }
-
-        String providedUsername = credentials[0];
-        String providedPassword = credentials[1];
-
-        // Autenticar el usuario
-        boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
-        }
-
-        if (!authService.isTrainee(providedUsername, providedPassword)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND);
-        }
+            @RequestParam(value = "trainingType", required = false) String trainingType) {
 
         TrainingType trainingType1 = new TrainingType();
         if(trainingType != null){
@@ -352,24 +231,8 @@ public class TraineeController {
 
     @PatchMapping("/{username}/status")
     public ResponseEntity<?> updateTraineeStatus(
-            @RequestHeader(value = "Authorization") String auth,
             @PathVariable("username") String username,
             @RequestParam("active") boolean active) {
-
-        String[] credentials = AuthService.decodeCredentials(auth);
-
-        if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
-        }
-
-        String providedUsername = credentials[0];
-        String providedPassword = credentials[1];
-
-        // Autenticar el usuario
-        boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
-        }
 
         Trainee trainee = traineeService.findTraineeByUsername(username);
         if (trainee == null) {
