@@ -6,7 +6,6 @@ import com.uw.model.Trainee;
 import com.uw.model.Trainer;
 import com.uw.model.Training;
 import com.uw.model.TrainingType;
-import com.uw.service.AuthService;
 import com.uw.service.TraineeService;
 import com.uw.service.TrainerService;
 import com.uw.service.TrainingService;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashSet;
@@ -31,16 +29,13 @@ import java.util.stream.Collectors;
 @RequestMapping("api/v1/trainings")
 public class TrainingController {
 
-    private final AuthService authService;
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
 
     @Autowired
-    public TrainingController(AuthService authService,
-                              TraineeService traineeService,
+    public TrainingController(TraineeService traineeService,
                               TrainerService trainerService, TrainingService trainingService){
-        this.authService = authService;
         this.traineeService = traineeService;
         this.trainerService = trainerService;
         this.trainingService = trainingService;
@@ -48,22 +43,8 @@ public class TrainingController {
 
     @PostMapping
     public ResponseEntity<?> create(
-            @RequestHeader(value = "Authorization") String auth,
             @RequestBody TrainingRequestDTO trainingRequest
             ){
-        String[] credentials = AuthService.decodeCredentials(auth);
-        if (credentials.length != 2) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_AUTH_HEADER);
-        }
-
-        String providedUsername = credentials[0];
-        String providedPassword = credentials[1];
-
-        // Autenticar el usuario
-        boolean isAuthenticated = authService.authentication(providedUsername, providedPassword);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorMessages.INVALID_CREDENTIALS);
-        }
 
         Trainee trainee = traineeService.findTraineeByUsername(trainingRequest.getTraineeUsername());
         if (trainee == null) {

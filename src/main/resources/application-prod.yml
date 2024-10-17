@@ -1,32 +1,8 @@
 spring:
   config:
     activate:
-      on-profile: dev
-
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/testdb?useSSL=false
-    username: root
-    password: 1234
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-    show-sql: true
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
----
-spring:
-  config:
-    activate:
       on-profile: prod
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/gym_crm?useSSL=false
@@ -40,11 +16,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
     show-sql: true
-
----
-spring:
-  profiles:
-    active: dev
 
 management:
   prometheus:
@@ -69,3 +40,7 @@ management:
       show-details: always
     mappings:
       enabled: true
+security:
+  jwt:
+    expiration-time: 3600000
+    secret-key: 3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b

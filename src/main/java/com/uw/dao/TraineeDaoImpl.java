@@ -45,7 +45,7 @@ public class TraineeDaoImpl implements TraineeDao{
     public void update(Trainee trainee) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.update(trainee);
+            session.merge(trainee);
             transaction.commit();
             logger.fine("Trainee updated successfully");
         } catch ( HibernateException | NoResultException e) {
