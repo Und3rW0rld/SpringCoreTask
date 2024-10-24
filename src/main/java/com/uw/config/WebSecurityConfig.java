@@ -39,7 +39,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator", "/api/v1/login", "/api/v1/trainers", "/api/v1/trainees",
+                        .requestMatchers("/actuator", "/actuator/health", "/actuator/info", "/api/v1/login", "/api/v1/trainers", "/api/v1/trainees",
                                 "/swagger-ui/**", "/v3/**", "/api/v1/refresh")
                         .permitAll()
                         .requestMatchers(EndpointRequest.to(HealthEndpoint.class)).permitAll()
