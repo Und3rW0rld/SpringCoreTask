@@ -51,6 +51,13 @@
       <version>1.10.4</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-core</artifactId>
+      <version>1.10.4</version>
+    </dependency>
+
+
     <!-- MySQL Connector -->
     <dependency>
       <groupId>mysql</groupId>

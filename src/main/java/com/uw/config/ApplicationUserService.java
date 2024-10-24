@@ -1,8 +1,8 @@
 package com.uw.config;
 
+import com.uw.exceptions.UserNotFoundException;
 import com.uw.model.User;
 import com.uw.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,7 +24,7 @@ public class ApplicationUserService implements UserDetailsService {
         User user;
 
         user = userRepository.findByUsername(username)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new UserNotFoundException(username));
         if (user != null) {
             return new ApplicationUser(
                     user.getId(), user.getUsername(), user.getPassword());
