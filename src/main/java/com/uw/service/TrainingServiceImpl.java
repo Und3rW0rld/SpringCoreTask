@@ -26,6 +26,11 @@ public class TrainingServiceImpl implements TrainingService{
     }
 
     @Override
+    public void deleteTraining(long id) {
+        trainingDao.delete(id);
+    }
+
+    @Override
     public Training selectTrainingProfile(long id) throws Exception {
         Training training = this.trainingDao.selectProfile(id);
         if(training == null){
@@ -47,5 +52,10 @@ public class TrainingServiceImpl implements TrainingService{
     @Override
     public List<Training> getTraineeTrainings(String username, LocalDate startDate, LocalDate endDate, String trainerName, TrainingType trainingType) {
         return trainingDao.getTraineeTrainings(username, startDate, endDate, trainerName, trainingType);
+    }
+
+    @Override
+    public Training findById(Long id) {
+        return trainingDao.findById(id);
     }
 }

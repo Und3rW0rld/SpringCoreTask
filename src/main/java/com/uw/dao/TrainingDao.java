@@ -8,9 +8,11 @@ import java.util.List;
 
 public interface TrainingDao {
     void create( Training training );
+    void delete( long id );
     Training selectProfile( long id );
     List<Training> findAll();
     List<Training> getTraineeTrainings(String username, LocalDate fromDate, LocalDate toDate, String trainerName, TrainingType trainingType);
-
     List<Training> getTrainerTrainings(String username, LocalDate startDate, LocalDate endDate, String traineeName);
+
+    Training findById(Long id);
 }
