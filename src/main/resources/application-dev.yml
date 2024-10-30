@@ -1,52 +1,79 @@
+
+
+server:
+    port: 8080
+
 spring:
-  config:
-    activate:
-      on-profile: dev
+    application:
+        name: gym-crm-service
+    config:
+        activate:
+            on-profile: dev
 
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/testdb?useSSL=false
-    username: root
-    password: 1234
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/testdb?useSSL=false
+        username: root
+        password: 1234
 
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-    show-sql: true
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.MySQLDialect
+        show-sql: true
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    h2:
+        console:
+            enabled: true
+            path: /h2-console
 
 management:
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-  endpoints:
-    enabled-by-default: false
-    web:
-      exposure:
-        include: health, metrics, prometheus
-  info:
-    env:
-      enabled: true
-  endpoint:
     prometheus:
-      enabled: true
+        metrics:
+            export:
+                enabled: true
+    endpoints:
+        enabled-by-default: false
+        web:
+            exposure:
+                include: health, metrics, prometheus
     info:
-      enabled: true
-    health:
-      enabled: true
-      show-details: always
-    mappings:
-      enabled: true
+        env:
+            enabled: true
+    endpoint:
+        prometheus:
+            enabled: true
+        info:
+            enabled: true
+        health:
+            enabled: true
+            show-details: always
+        mappings:
+            enabled: true
 
 security:
-  jwt:
-    expiration-time: 3600000
-    secret-key: signatureSecret183827374628384628274628364627836482738
+    jwt:
+        expiration-time: 3600000
+        secret-key: signatureSecret183827374628384628274628364627836482738
+
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+resilience4j.circuitbreaker:
+    instances:
+        trainerWorkloadClient:
+            registerHealthIndicator: true
+            slidingWindowSize: 5
+            failureRateThreshold: 50
+            waitDurationInOpenState: 10000ms
+            permittedNumberOfCallsInHalfOpenState: 3
+            minimumNumberOfCalls: 5
+logging:
+    level:
+      org:
+          springframework:
+              security: DEBUG

@@ -8,25 +8,25 @@ import com.uw.model.User;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TrainerServiceTest {
 
     SessionFactory sessionFactory;
     private final TrainerService trainerService = new TrainerServiceImpl();
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (sessionFactory != null) {
             sessionFactory.close();
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         sessionFactory = new MetadataSources(new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build())
                 .buildMetadata()
@@ -130,10 +130,12 @@ public class TrainerServiceTest {
         assertEquals(trainer.toString(), selectedTrainer.toString());
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testSelectTrainerProfile_Failure() throws Exception {
         // Intentar seleccionar un entrenador con un ID inexistente
         long nonExistentId = 12345L;
-        trainerService.selectTrainerProfile(nonExistentId);
+        assertThrows(Exception.class, () ->{
+            trainerService.selectTrainerProfile(nonExistentId);
+        });
     }
 }

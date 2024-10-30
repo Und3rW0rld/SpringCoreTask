@@ -41,6 +41,23 @@ public class TrainingDaoImpl implements TrainingDao{
     }
 
     @Override
+    public void delete(long id) {
+            Transaction transaction = null;
+            try (Session session = sessionFactory.openSession()){
+                  transaction = session.beginTransaction();
+                  Training training = session.get(Training.class, id);
+                  session.remove(training);
+                  transaction.commit();
+            }catch (Exception e){
+                  if (transaction != null){
+                  transaction.rollback();
+                  }
+                  logger.severe("Failed to delete training");
+                  logger.severe(e.getMessage());
+            }
+    }
+
+    @Override
     public Training selectProfile(long id) {
         Training training = null;
         try (Session session = sessionFactory.openSession()) {
@@ -162,5 +179,17 @@ public class TrainingDaoImpl implements TrainingDao{
         }
 
         return results;
+    }
+
+    @Override
+    public Training findById(Long id) {
+            Training training = null;
+            try (Session session = sessionFactory.openSession()) {
+                  training = session.get(Training.class, id);
+            } catch (Exception e) {
+                  logger.severe("Training with this id was not found");
+                  logger.severe(e.getMessage());
+            }
+            return training;
     }
 }

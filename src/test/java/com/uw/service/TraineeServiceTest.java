@@ -6,26 +6,27 @@ import com.uw.model.User;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TraineeServiceTest {
 
     SessionFactory sessionFactory;
     private final TraineeService traineeService = new TraineeServiceImpl();
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (sessionFactory != null) {
             sessionFactory.close();
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         sessionFactory = new MetadataSources(new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build())
                 .buildMetadata()
@@ -172,11 +173,13 @@ public class TraineeServiceTest {
     }
 
     // Test para selectTraineeProfile (caso fallido)
-    @Test(expected = Exception.class)
+    @Test
     public void testSelectTraineeProfile_Failure() throws Exception {
         // Intentar seleccionar un trainee con un ID inexistente
         long nonExistentId = 12345L;
-        traineeService.selectTraineeProfile(nonExistentId);
+        assertThrows(Exception.class, () -> {
+            traineeService.selectTraineeProfile(nonExistentId);
+        });
     }
 
 }
