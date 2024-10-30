@@ -13,7 +13,7 @@ public interface TrainerWorkloadClient {
       ResponseEntity<String> trainingRequest (@RequestBody TrainingRequest trainingRequest ,
                                          @RequestHeader("Authorization") String token);
 
-      @GetMapping(value = "/trainer-workload/{username}/{year}/{month}", consumes = "application/json")
+      @GetMapping(value = "/trainer-workload/{username}/{year}/{month}" )
       int getMonthlyHours (
               @PathVariable(name = "username") String username,
               @PathVariable(name = "year") int year,

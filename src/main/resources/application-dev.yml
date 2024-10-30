@@ -1,3 +1,5 @@
+
+
 server:
     port: 8080
 
@@ -70,3 +72,8 @@ resilience4j.circuitbreaker:
             waitDurationInOpenState: 10000ms
             permittedNumberOfCallsInHalfOpenState: 3
             minimumNumberOfCalls: 5
+logging:
+    level:
+      org:
+          springframework:
+              security: DEBUG
