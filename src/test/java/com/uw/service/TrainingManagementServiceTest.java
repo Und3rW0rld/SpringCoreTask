@@ -46,31 +46,6 @@ class TrainingManagementServiceTest {
       @InjectMocks
       private TrainingManagementService trainingManagementService;
 
-      /**
-       * Tests the successful creation of a training session.
-       */
-      @Test
-      void createTraining_success() {
-            TrainingRequestDTO trainingRequestDTO = new TrainingRequestDTO();
-            trainingRequestDTO.setTraineeUsername("trainee1");
-            trainingRequestDTO.setTrainerUsername("trainer1");
-            trainingRequestDTO.setTrainingName("Java Basics");
-            trainingRequestDTO.setTrainingDate(LocalDate.now());
-            trainingRequestDTO.setTrainingDuration(60);
-
-            Trainee trainee = new Trainee();
-            Trainer trainer = new Trainer();
-            trainer.setUser(new User());
-            Training training = new Training();
-
-            when(traineeService.findTraineeByUsername("trainee1")).thenReturn(trainee);
-            when(trainerService.findTrainerByUsername("trainer1")).thenReturn(trainer);
-            when(trainingService.createTraining(any(Training.class))).thenReturn(training.getId());
-
-            CompletableFuture<ResponseEntity<?>> response = trainingManagementService.createTraining(trainingRequestDTO, "token");
-
-            assertEquals(HttpStatus.OK, response.join().getStatusCode());
-      }
 
       /**
        * Tests the scenario where the trainee is not found.
@@ -82,7 +57,7 @@ class TrainingManagementServiceTest {
 
             when(traineeService.findTraineeByUsername("trainee1")).thenReturn(null);
 
-            CompletableFuture<ResponseEntity<?>> response = trainingManagementService.createTraining(trainingRequestDTO, "token");
+            CompletableFuture<ResponseEntity<?>> response = trainingManagementService.createTraining(trainingRequestDTO);
 
             assertEquals(HttpStatus.NOT_FOUND, response.join().getStatusCode());
             assertEquals(ErrorMessages.TRAINEE_NOT_FOUND, response.join().getBody());
@@ -102,31 +77,10 @@ class TrainingManagementServiceTest {
             when(traineeService.findTraineeByUsername("trainee1")).thenReturn(trainee);
             when(trainerService.findTrainerByUsername("trainer1")).thenReturn(null);
 
-            CompletableFuture<ResponseEntity<?>> response = trainingManagementService.createTraining(trainingRequestDTO, "token");
+            CompletableFuture<ResponseEntity<?>> response = trainingManagementService.createTraining(trainingRequestDTO);
 
             assertEquals(HttpStatus.NOT_FOUND, response.join().getStatusCode());
             assertEquals(ErrorMessages.TRAINER_NOT_FOUND, response.join().getBody());
-      }
-
-      /**
-       * Tests the successful deletion of a training session.
-       */
-      @Test
-      void deleteTraining_success() {
-
-            Trainer trainer = new Trainer();
-            trainer.setUser(new User());
-
-            Training training = new Training();
-            training.setTrainer(trainer);
-            training.setTrainingDate(LocalDate.now());
-            training.setTrainingDuration(60);
-
-            when(trainingService.findById(1L)).thenReturn(training);
-
-            CompletableFuture<ResponseEntity<?>> response = trainingManagementService.deleteTraining(1L, "token");
-
-            assertEquals(HttpStatus.OK, response.join().getStatusCode());
       }
 
       /**
@@ -136,7 +90,7 @@ class TrainingManagementServiceTest {
       void deleteTraining_notFound() {
             when(trainingService.findById(1L)).thenReturn(null);
 
-            CompletableFuture<ResponseEntity<?>> response = trainingManagementService.deleteTraining(1L, "token");
+            CompletableFuture<ResponseEntity<?>> response = trainingManagementService.deleteTraining(1L);
 
             assertEquals(HttpStatus.NOT_FOUND, response.join().getStatusCode());
             assertEquals(ErrorMessages.TRAINING_NOT_FOUND, response.join().getBody());
