@@ -9,6 +9,10 @@ spring:
     config:
         activate:
             on-profile: dev
+    activemq:
+        broker-url: tcp://localhost:61616
+        user: admin
+        password: admin
 
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver

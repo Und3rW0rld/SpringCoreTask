@@ -40,30 +40,27 @@ public class TrainingController {
        * Creates a new training session.
        *
        * @param trainingRequest the training request data transfer object
-       * @param token the authorization token
        * @return a CompletableFuture containing the ResponseEntity
        */
       @PostMapping
       @CircuitBreaker(name = "trainerWorkloadService", fallbackMethod = "fallbackCreateTraining")
       @TimeLimiter(name = "trainerWorkloadService")
-      public CompletableFuture<ResponseEntity<?>> create(@RequestBody TrainingRequestDTO trainingRequest,
-                                                         @RequestHeader("Authorization") String token) {
-            return trainingManagementService.createTraining(trainingRequest, token);
+      public CompletableFuture<ResponseEntity<?>> create( @RequestBody TrainingRequestDTO trainingRequest ) {
+            System.out.println("ESTOY EN EL CONTROLLER");
+            return trainingManagementService.createTraining(trainingRequest);
       }
 
       /**
        * Deletes an existing training session.
        *
        * @param id the ID of the training session to delete
-       * @param token the authorization token
        * @return a CompletableFuture containing the ResponseEntity
        */
       @DeleteMapping("/{id}")
       @CircuitBreaker(name = "trainerWorkloadService", fallbackMethod = "fallbackDeleteTraining")
       @TimeLimiter(name = "trainerWorkloadService")
-      public CompletableFuture<ResponseEntity<?>> delete(@PathVariable Long id,
-                                                         @RequestHeader("Authorization") String token) {
-            return trainingManagementService.deleteTraining(id, token);
+      public CompletableFuture<ResponseEntity<?>> delete(@PathVariable Long id) {
+            return trainingManagementService.deleteTraining(id);
       }
 
       /**
@@ -87,11 +84,10 @@ public class TrainingController {
        * Fallback method for create training when the circuit breaker is triggered.
        *
        * @param trainingRequest the training request data transfer object
-       * @param token the authorization token
        * @param throwable the exception that caused the fallback
        * @return a CompletableFuture containing the ResponseEntity with an error message
        */
-      public CompletableFuture<ResponseEntity<String>> fallbackCreateTraining(TrainingRequestDTO trainingRequest, String token, Throwable throwable) {
+      public CompletableFuture<ResponseEntity<String>> fallbackCreateTraining(TrainingRequestDTO trainingRequest, Throwable throwable) {
             return CompletableFuture.completedFuture(
                     ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Service is currently unavailable. Please try again later.")
             );
@@ -101,11 +97,10 @@ public class TrainingController {
        * Fallback method for delete training when the circuit breaker is triggered.
        *
        * @param id the ID of the training session to delete
-       * @param token the authorization token
        * @param throwable the exception that caused the fallback
        * @return a CompletableFuture containing the ResponseEntity with an error message
        */
-      public CompletableFuture<ResponseEntity<String>> fallbackDeleteTraining(Long id, String token, Throwable throwable) {
+      public CompletableFuture<ResponseEntity<String>> fallbackDeleteTraining(Long id, Throwable throwable) {
             return CompletableFuture.completedFuture(
                     ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Unable to delete training at this time. Please try again later.")
             );

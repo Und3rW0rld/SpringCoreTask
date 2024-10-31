@@ -1,6 +1,8 @@
 package com.uw.service;
 
-import com.uw.client.TrainerWorkloadClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.uw.dto.TrainingRequest;
 import com.uw.dto.TrainingRequestDTO;
 import com.uw.model.Trainee;
@@ -8,6 +10,8 @@ import com.uw.model.Trainer;
 import com.uw.model.Training;
 import com.uw.model.TrainingType;
 import com.uw.util.ErrorMessages;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +33,8 @@ public class TrainingManagementService {
       private final TraineeService traineeService;
       private final TrainerService trainerService;
       private final TrainingService trainingService;
-      private final TrainerWorkloadClient trainerWorkloadClient;
+      private final MessageProducer messageProducer;
+      private static final Logger logger = LoggerFactory.getLogger(TrainingManagementService.class);
 
       /**
        * Constructor for TrainingManagementService.
@@ -37,25 +42,23 @@ public class TrainingManagementService {
        * @param traineeService the service to manage trainees
        * @param trainerService the service to manage trainers
        * @param trainingService the service to manage trainings
-       * @param trainerWorkloadClient the client to manage trainer workload
        */
       @Autowired
       public TrainingManagementService(TraineeService traineeService, TrainerService trainerService,
-                                       TrainingService trainingService, TrainerWorkloadClient trainerWorkloadClient) {
+                                       TrainingService trainingService, MessageProducer messageProducer) {
             this.traineeService = traineeService;
             this.trainerService = trainerService;
             this.trainingService = trainingService;
-            this.trainerWorkloadClient = trainerWorkloadClient;
+            this.messageProducer = messageProducer;
       }
 
       /**
        * Creates a new training session.
        *
        * @param trainingRequest the training request data transfer object
-       * @param token the authorization token
        * @return a CompletableFuture containing the ResponseEntity
        */
-      public CompletableFuture<ResponseEntity<?>> createTraining(TrainingRequestDTO trainingRequest, String token) {
+      public CompletableFuture<ResponseEntity<?>> createTraining(TrainingRequestDTO trainingRequest) {
             Optional<Trainee> traineeOpt = Optional.ofNullable(traineeService.findTraineeByUsername(trainingRequest.getTraineeUsername()));
             if (traineeOpt.isEmpty()) {
                   return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND));
@@ -69,7 +72,7 @@ public class TrainingManagementService {
             Training training = createTrainingEntity(trainingRequest, traineeOpt.get(), trainerOpt.get());
             TrainingRequest request = mapToTrainingRequest(trainerOpt.get(), trainingRequest.getTrainingDate(), trainingRequest.getTrainingDuration(), "add");
 
-            trainerWorkloadClient.trainingRequest(request, token);
+            sendTrainingRequestToQueue(request);
             trainingService.createTraining(training);
 
             return CompletableFuture.completedFuture(ResponseEntity.ok().build());
@@ -79,10 +82,9 @@ public class TrainingManagementService {
        * Deletes an existing training session.
        *
        * @param id the ID of the training session to delete
-       * @param token the authorization token
        * @return a CompletableFuture containing the ResponseEntity
        */
-      public CompletableFuture<ResponseEntity<?>> deleteTraining(Long id, String token) {
+      public CompletableFuture<ResponseEntity<?>> deleteTraining(Long id) {
             Optional<Training> trainingOpt = Optional.ofNullable(trainingService.findById(id));
             if (trainingOpt.isEmpty()) {
                   return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINING_NOT_FOUND));
@@ -91,8 +93,8 @@ public class TrainingManagementService {
             Training training = trainingOpt.get();
             TrainingRequest request = mapToTrainingRequest(training.getTrainer(), training.getTrainingDate(), training.getTrainingDuration(), "delete");
 
-            trainerWorkloadClient.trainingRequest(request, token);
             trainingService.deleteTraining(id);
+            sendTrainingRequestToQueue(request);
 
             return CompletableFuture.completedFuture(ResponseEntity.ok().build());
       }
@@ -148,5 +150,23 @@ public class TrainingManagementService {
             request.setTrainingDuration(trainingDuration);
             request.setActionType(action);
             return request;
+      }
+
+      /**
+       * Sends the given training request to the training queue.
+       *
+       * @param request the training request to send
+       */
+      private void sendTrainingRequestToQueue(TrainingRequest request) {
+            try {
+                  ObjectMapper objectMapper = new ObjectMapper();
+                  objectMapper.registerModule(new JavaTimeModule());
+                  String message = objectMapper.writeValueAsString(request);
+                  logger.info("Sending message: {}", message);
+                  messageProducer.sendMessage("training.queue", message); // Usa el MessageProducer
+
+            } catch (JsonProcessingException e) {
+                  throw new RuntimeException("Failed to convert request to JSON", e);
+            }
       }
 }

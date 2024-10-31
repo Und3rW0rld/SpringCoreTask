@@ -23,27 +23,32 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        try{
+        try {
             String jwt = parseJwt(request);
-            if(jwt != null && jwtUtils.validateJwtToken(jwt)){
-                String username = jwtUtils.getUsernameFromJwtToken(jwt);
+            if (jwt != null) {
+                logger.debug("JWT received: {}"+ jwt);
+                if (jwtUtils.validateJwtToken(jwt)) {
+                    logger.debug("JWT is valid");
+                    String username = jwtUtils.getUsernameFromJwtToken(jwt);
+                    logger.debug("Username from JWT: {}"+ username);
 
-                UserDetails userDetails = applicationUserService.loadUserByUsername(username);
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails.getUsername(),
-                                userDetails.getPassword(),
-                                userDetails.getAuthorities()
-                        );
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UserDetails userDetails = applicationUserService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null, // No es necesario pasar la contraseña aquí
+                            userDetails.getAuthorities()
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    logger.warn("Invalid JWT");
+                }
+            } else {
+                logger.warn("No JWT found in request");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);
         }
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
     public String parseJwt(HttpServletRequest request){
         String headerAuth = request.getHeader("Authorization");
