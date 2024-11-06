@@ -1,6 +1,7 @@
 package com.uw.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -8,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class ApplicationUser implements UserDetails {
+    @Getter
     private final Long id;
     private final String username;
     @JsonIgnore
@@ -56,7 +58,4 @@ public class ApplicationUser implements UserDetails {
         return true;
     }
 
-    public Long getId() {
-        return id;
-    }
 }
