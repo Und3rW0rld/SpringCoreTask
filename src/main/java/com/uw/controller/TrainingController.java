@@ -6,6 +6,8 @@ import com.uw.model.TrainingType;
 import com.uw.service.TrainingManagementService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("api/v1/trainings")
 public class TrainingController {
+
+      private static final Logger logger = LoggerFactory.getLogger(TrainingController.class);
 
       private final TrainingManagementService trainingManagementService;
 
@@ -45,8 +49,8 @@ public class TrainingController {
       @PostMapping
       @CircuitBreaker(name = "trainerWorkloadService", fallbackMethod = "fallbackCreateTraining")
       @TimeLimiter(name = "trainerWorkloadService")
-      public CompletableFuture<ResponseEntity<?>> create( @RequestBody TrainingRequestDTO trainingRequest ) {
-            System.out.println("ESTOY EN EL CONTROLLER");
+      public CompletableFuture<ResponseEntity<?>> create(@RequestBody TrainingRequestDTO trainingRequest) {
+            logger.info("Creating new training session with request: {}", trainingRequest);
             return trainingManagementService.createTraining(trainingRequest);
       }
 
@@ -60,6 +64,7 @@ public class TrainingController {
       @CircuitBreaker(name = "trainerWorkloadService", fallbackMethod = "fallbackDeleteTraining")
       @TimeLimiter(name = "trainerWorkloadService")
       public CompletableFuture<ResponseEntity<?>> delete(@PathVariable Long id) {
+            logger.info("Deleting training session with ID: {}", id);
             return trainingManagementService.deleteTraining(id);
       }
 
@@ -70,6 +75,7 @@ public class TrainingController {
        */
       @GetMapping("/types")
       public ResponseEntity<?> getTrainingTypes() {
+            logger.info("Retrieving all unique training types");
             Set<TrainingType> uniqueTrainingTypes = trainingManagementService.getUniqueTrainingTypes();
             List<TrainingTypeDTO> trainingTypeDTOs = uniqueTrainingTypes.stream()
                     .map(trainingType -> new TrainingTypeDTO(trainingType.getId(), trainingType.getTypeName().name()))
@@ -88,6 +94,7 @@ public class TrainingController {
        * @return a CompletableFuture containing the ResponseEntity with an error message
        */
       public CompletableFuture<ResponseEntity<String>> fallbackCreateTraining(TrainingRequestDTO trainingRequest, Throwable throwable) {
+            logger.error("Fallback for create training triggered due to: {}", throwable.getMessage());
             return CompletableFuture.completedFuture(
                     ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Service is currently unavailable. Please try again later.")
             );
@@ -101,6 +108,7 @@ public class TrainingController {
        * @return a CompletableFuture containing the ResponseEntity with an error message
        */
       public CompletableFuture<ResponseEntity<String>> fallbackDeleteTraining(Long id, Throwable throwable) {
+            logger.error("Fallback for delete training triggered due to: {}", throwable.getMessage());
             return CompletableFuture.completedFuture(
                     ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Unable to delete training at this time. Please try again later.")
             );

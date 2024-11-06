@@ -29,12 +29,14 @@ import java.util.stream.Collectors;
  */
 @Service
 public class TrainingManagementService {
+      // Logger declaration
+      private static final Logger logger = LoggerFactory.getLogger(TrainingManagementService.class);
 
       private final TraineeService traineeService;
       private final TrainerService trainerService;
       private final TrainingService trainingService;
       private final MessageProducer messageProducer;
-      private static final Logger logger = LoggerFactory.getLogger(TrainingManagementService.class);
+      private final ObjectMapper objectMapper;
 
       /**
        * Constructor for TrainingManagementService.
@@ -45,11 +47,13 @@ public class TrainingManagementService {
        */
       @Autowired
       public TrainingManagementService(TraineeService traineeService, TrainerService trainerService,
-                                       TrainingService trainingService, MessageProducer messageProducer) {
+                                       TrainingService trainingService, MessageProducer messageProducer,
+                                       ObjectMapper objectMapper) {
             this.traineeService = traineeService;
             this.trainerService = trainerService;
             this.trainingService = trainingService;
             this.messageProducer = messageProducer;
+            this.objectMapper = objectMapper;
       }
 
       /**
@@ -159,8 +163,6 @@ public class TrainingManagementService {
        */
       private void sendTrainingRequestToQueue(TrainingRequest request) {
             try {
-                  ObjectMapper objectMapper = new ObjectMapper();
-                  objectMapper.registerModule(new JavaTimeModule());
                   String message = objectMapper.writeValueAsString(request);
                   logger.info("Sending message: {}", message);
                   messageProducer.sendMessage("training.queue", message); // Usa el MessageProducer
