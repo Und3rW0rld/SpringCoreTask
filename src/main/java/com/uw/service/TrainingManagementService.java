@@ -63,6 +63,10 @@ public class TrainingManagementService {
        * @return a CompletableFuture containing the ResponseEntity
        */
       public CompletableFuture<ResponseEntity<?>> createTraining(TrainingRequestDTO trainingRequest) {
+            if(trainingRequest.getTrainingName() == null || trainingRequest.getTrainerUsername() == null || trainingRequest.getTraineeUsername() == null) {
+                  return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid training request: missing required fields"));
+            }
+
             Optional<Trainee> traineeOpt = Optional.ofNullable(traineeService.findTraineeByUsername(trainingRequest.getTraineeUsername()));
             if (traineeOpt.isEmpty()) {
                   return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorMessages.TRAINEE_NOT_FOUND));
